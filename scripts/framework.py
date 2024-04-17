@@ -61,6 +61,9 @@ class Representation:
         # set the figure size and figure limits correctly
         self.figsize = (20, 10) if maptype == "sp" else (5, 8)
         self.figlims = (1232, 665) if maptype == "sp" else (850, 1000)
+        # for testing, REMOVE LATER:
+        if maptype == "test":
+            self.figlims = (10, 10)
 
     def plot_map(self):
         plt.figure(figsize=self.figsize)
@@ -71,6 +74,7 @@ class Representation:
                     self.figlims[1] - self.nodes[edge.source].y,
                     self.figlims[1] - self.nodes[edge.target].y,
                 ],
+                color="black",
             )
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
