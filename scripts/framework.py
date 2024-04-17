@@ -65,7 +65,7 @@ class Representation:
         if maptype == "test":
             self.figlims = (10, 10)
 
-    def plot_map(self):
+    def plot_map(self, plot_nodes=False):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:
             plt.plot(
@@ -76,6 +76,10 @@ class Representation:
                 ],
                 color="black",
             )
+        if plot_nodes:
+            for id, node in self.nodes.items():
+                plt.scatter(node.x, self.figlims[1] - node.y, color="red")
+                plt.text(node.x + 0.25, self.figlims[1] - node.y, f"{id}")
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
         plt.show()
