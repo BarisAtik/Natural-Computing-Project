@@ -61,9 +61,6 @@ class Representation:
         # set the figure size and figure limits correctly
         self.figsize = (20, 10) if maptype == "sp" else (5, 8)
         self.figlims = (1232, 665) if maptype == "sp" else (850, 1000)
-        # for testing, REMOVE LATER:
-        if maptype == "test":
-            self.figlims = (10, 10)
 
     def plot_map(self, route=None, plot_nodes=False):
         plt.figure(figsize=self.figsize)
@@ -85,7 +82,7 @@ class Representation:
             )
         if plot_nodes:
             for id, node in self.nodes.items():
-                plt.scatter(node.x, self.figlims[1] - node.y, color="blue", s=12)
+                plt.scatter(node.x, self.figlims[1] - node.y, color="black", s=12)
                 plt.text(
                     node.x + 0.4,
                     self.figlims[1] - node.y,
