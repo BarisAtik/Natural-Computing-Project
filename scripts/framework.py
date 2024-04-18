@@ -7,6 +7,7 @@ class Node:
         self.id = id
         self.x = x
         self.y = y
+        self.coordinates = (x, y)
         self.adjacent_nodes = adjacent_nodes
 
     def __str__(self):
