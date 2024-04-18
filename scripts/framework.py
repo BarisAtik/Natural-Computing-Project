@@ -80,6 +80,33 @@ class Representation:
                 color=color,
                 linewidth=linewidth,
             )
+        if route:
+            plt.scatter(
+                self.nodes[route[0]].x,
+                self.figlims[1] - self.nodes[route[0]].y,
+                color="black",
+                zorder=3,
+                s=50,
+            )
+            plt.text(
+                self.nodes[route[0]].x + 5,
+                self.figlims[1] - self.nodes[route[0]].y + 5,
+                "Start",
+                fontsize=12,
+            )
+            plt.scatter(
+                self.nodes[route[-1]].x,
+                self.figlims[1] - self.nodes[route[-1]].y,
+                color="black",
+                zorder=3,
+                s=50,
+            )
+            plt.text(
+                self.nodes[route[-1]].x + 5,
+                self.figlims[1] - self.nodes[route[-1]].y + 5,
+                "End",
+                fontsize=12,
+            )
         if plot_nodes:
             for id, node in self.nodes.items():
                 plt.scatter(node.x, self.figlims[1] - node.y, color="black", s=12)
