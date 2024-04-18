@@ -65,25 +65,33 @@ class Representation:
         if maptype == "test":
             self.figlims = (10, 10)
 
-    def plot_map(self, plot_nodes=False):
+    def plot_map(self, route=None, plot_nodes=False):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:
+            if route and edge.source in route and edge.target in route:
+                color = "red"
+                linewidth = 3
+            else:
+                color = "black"
+                linewidth = 1
             plt.plot(
                 [self.nodes[edge.source].x, self.nodes[edge.target].x],
                 [
                     self.figlims[1] - self.nodes[edge.source].y,
                     self.figlims[1] - self.nodes[edge.target].y,
                 ],
-                color="black",
+                color=color,
+                linewidth=linewidth,
             )
         if plot_nodes:
             for id, node in self.nodes.items():
-                plt.scatter(node.x, self.figlims[1] - node.y, color="red")
-                plt.text(node.x + 0.25, self.figlims[1] - node.y, f"{id}")
+                plt.scatter(node.x, self.figlims[1] - node.y, color="blue", s=12)
+                plt.text(
+                    node.x + 0.4,
+                    self.figlims[1] - node.y,
+                    f"{id}",
+                    fontsize=8,
+                )
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
         plt.show()
-
-    def plot_road(self):
-        # TODO implement
-        pass
