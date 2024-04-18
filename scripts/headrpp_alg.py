@@ -55,6 +55,19 @@ class HEADRPP:
             parents.append(winner)
         return parents
 
+    def loop_anneal(self, route):
+        visited = set()
+        new_route = []
+        for node in route:
+            if node not in visited:
+                visited.add(node)
+                new_route.append(node)
+            else:
+                index = new_route.index(node)
+                new_route = new_route[: index + 1]
+                visited = set(new_route)
+        return new_route
+
     def create_offspring(self, parents, p_crossover, p_mutation):
         offspring = []
         choices = range(len(parents))
