@@ -66,7 +66,20 @@ class Representation:
     def plot_map(self, route=None, plot_nodes=False):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:
-            if route and edge.source in route and edge.target in route:
+            if (
+                route
+                and edge.source in route
+                and (
+                    (
+                        (index := route.index(edge.source)) + 1 < len(route)
+                        and edge.target == route[index + 1]
+                    )
+                    or (
+                        (index := route.index(edge.source)) - 1 >= 0
+                        and edge.target == route[index - 1]
+                    )
+                )
+            ):
                 color = "red"
                 linewidth = 3
             else:
