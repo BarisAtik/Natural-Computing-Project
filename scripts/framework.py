@@ -63,6 +63,9 @@ class Representation:
         self.figsize = (20, 10) if maptype == "sp" else (5, 8)
         self.figlims = (1232, 665) if maptype == "sp" else (850, 1000)
 
+        # set the map name correctly
+        self.map_name = "Singapore" if maptype == "sp" else "the Netherlands"
+
     def plot_map(self, route=None, plot_nodes=False):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:

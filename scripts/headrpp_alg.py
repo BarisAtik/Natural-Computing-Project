@@ -1,6 +1,7 @@
 import random, math
 import numpy as np
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 
 class HEADRPP:
@@ -85,7 +86,32 @@ class HEADRPP:
 
         return offspring
 
-    def run_algorithm(self):
+    def plot_results(
+        self,
+        avg_fitness,
+        best_fitness,
+        nr_generations,
+        map_name,
+        show_results=True,
+        save_name=None,
+    ):
+        plt.figure(figsize=(10, 7))
+        plt.plot(range(nr_generations + 1), avg_fitness, label="Average for HEADRPP")
+        plt.plot(range(nr_generations + 1), best_fitness, label="Best for HEADRPP")
+        plt.xlim([0, nr_generations])
+        plt.xlabel("Time (generations)")
+        plt.ylabel("Route distance")
+        plt.title(
+            f"Fitness of population over time for the HEADRPP algorithm applied on a map of {map_name}"
+        )
+        plt.legend()
+        if save_name:
+            plt.savefig(save_name)
+        if show_results:
+            plt.show()
+        plt.close()
+
+    def run_algorithm(self, show_results=True, save_name=None):
         population = self.init_population()
         avg_fitness = [np.mean([self.calculate_fitness(route) for route in population])]
         best_fitness = [np.min([self.calculate_fitness(route) for route in population])]
@@ -100,4 +126,12 @@ class HEADRPP:
                 np.min([self.calculate_fitness(route) for route in population])
             )
 
+        self.plot_results(
+            avg_fitness,
+            best_fitness,
+            self.nr_generations,
+            self.repr.map_name,
+            show_results,
+            save_name,
+        )
         return population, avg_fitness, best_fitness
