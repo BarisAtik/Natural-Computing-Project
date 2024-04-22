@@ -12,16 +12,16 @@ class HEADRPP:
         self.end_node = end_node
         self.population_size = population_size
 
-    def generate_route(self):
-        route = [self.start_node]
+    def generate_route(self, start_node=None, old_route=[]):
+        route = [start_node] if start_node else [self.start_node]
         while route[-1] != self.end_node:
             forward_nodes = [
                 node
                 for node in self.repr.nodes[route[-1]].adjacent_nodes
-                if node not in route
+                if node not in route and node not in old_route
             ]
             if forward_nodes == []:
-                return self.generate_route()
+                return self.generate_route(start_node, old_route)
             next_node = random.choice(forward_nodes)
             route.append(next_node)
         return route
@@ -69,18 +69,39 @@ class HEADRPP:
                 visited = set(new_route)
         return new_route
 
+    def crossover(self, parent1, parent2):
+        # child1 = parent1[:]
+        # child2 = parent2[:]
+        # for i in range(len(parent1)):
+        #     if random.random() < 0.5:
+        #         child1[i], child2[i] = child2[i], child1[i]
+        # return child1, child2
+        return parent1, parent2
+
+    def mutation(self, route):
+        mutation_point = random.choice(route[1:-1])
+        index = route.index(mutation_point)
+        mutated_route = route[:index] + self.generate_route(
+            mutation_point, route[:index]
+        )
+        return mutated_route
+
     def create_offspring(self, parents, p_crossover, p_mutation):
         offspring = []
         choices = range(len(parents))
         for _ in range(0, self.population_size, 2):
             p1 = parents[random.choice(choices)].copy()
             p2 = parents[random.choice(choices)].copy()
-            # if random.random() <= p_c:
-            #     p1, p2 = crossover(p1, p2)
-            # if random.random() <= mu:
-            #     p1 = mutation(p1)
-            # if random.random() <= mu:
-            #     p2 = mutation(p2)
+            if random.random() <= p_crossover:
+                p1, p2 = self.crossover(p1, p2)
+                p1 = self.loop_anneal(p1)
+                p2 = self.loop_anneal(p2)
+            if random.random() <= p_mutation:
+                p1 = self.mutation(p1)
+                p1 = self.loop_anneal(p1)
+            if random.random() <= p_mutation:
+                p2 = self.mutation(p2)
+                p2 = self.loop_anneal(p2)
             offspring.append(p1)
             offspring.append(p2)
 
