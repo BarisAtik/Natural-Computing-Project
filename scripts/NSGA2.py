@@ -4,7 +4,7 @@ from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 
-class HEADRPP:
+class NSGA2:
     def __init__(self, repr, nr_generations, start_node, end_node, population_size):
         self.repr = repr
         self.nr_generations = nr_generations
@@ -181,8 +181,8 @@ class HEADRPP:
         save_name=None,
     ):
         plt.figure(figsize=(10, 7))
-        plt.plot(range(nr_generations + 1), avg_fitness, label="Average for HEADRPP")
-        plt.plot(range(nr_generations + 1), best_fitness, label="Best for HEADRPP")
+        plt.plot(range(nr_generations + 1), avg_fitness, label="Average for NSGA2")
+        plt.plot(range(nr_generations + 1), best_fitness, label="Best for NSGA2")
         plt.xlim([0, nr_generations])
         plt.xlabel("Time (generations)")
         plt.ylabel("Route distance")
