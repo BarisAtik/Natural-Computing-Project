@@ -96,19 +96,30 @@ class NSGA2:
                     closest_neighbour_1 = None
                     closest_neighbour_2 = None
                     for k in range(0, len(frontiers[i])):
+                        sum_feature1_i_j, sum_feature2_i_j, sum_feature3_i_j = 0
+                        sum_feature1_i_k, sum_feature2_i_k, sum_feature3_i_k = 0
+                        for l in range(0, len(frontiers[i][j])):
+                            sum_feature1_i_j += frontiers[i][j][l].traffic
+                            sum_feature2_i_j += frontiers[i][j][l].pollution
+                            sum_feature3_i_j += frontiers[i][j][l].feature3
+                        for l in range(0, len(frontiers[i][k])):
+                            sum_feature1_i_k += frontiers[i][k][l].traffic
+                            sum_feature2_i_k += frontiers[i][k][l].pollution
+                            sum_feature3_i_k += frontiers[i][k][l].feature3
                         # Calculate the crowding distance for the individual frontier[i][j]
+
+                        coordinate_i_j = (sum_feature1_i_j, sum_feature2_i_j, sum_feature3_i_j) # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_k = (sum_feature1_i_k, sum_feature2_i_k, sum_feature3_i_k) # (sum_feature1, sum_feature2, sum_feature3)
+                        distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
-                            distance_1 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
-                            closest_neighbour_1 = (k, distance_1)
+                            closest_neighbour_1 = (k, distance_i_j_k)
                         elif closest_neighbour_2 is None:
-                            distance_2 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
-                            closest_neighbour_2 = (k, distance_2)
+                            closest_neighbour_2 = (k, distance_i_j_k)
                         else:
-                            distance_3 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
-                            if distance_3 < closest_neighbour_1[1]:
-                                closest_neighbour_1 = (k, distance_3)
-                            elif distance_3 < closest_neighbour_2[1]:
-                                closest_neighbour_2 = (k, distance_3)
+                            if distance_i_j_k < closest_neighbour_1[1]:
+                                closest_neighbour_1 = (k, distance_i_j_k)
+                            elif distance_i_j_k < closest_neighbour_2[1]:
+                                closest_neighbour_2 = (k, distance_i_j_k)
                     # Now we calculate the crowding distance for this individual
                     # Which is the sum of the distances of the two closest neighbours
                     crowding_distance_i_j = closest_neighbour_1[-1] + closest_neighbour_2[-1]
