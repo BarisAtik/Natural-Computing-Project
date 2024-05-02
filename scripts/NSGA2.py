@@ -202,6 +202,8 @@ class NSGA2:
         best_fitness = [np.min([self.calculate_fitness(route) for route in population])]
 
         for _ in tqdm(range(self.nr_generations)):
+            print(self.fast_non_dominated_sort(population, 2))
+            # sorted_population = self.fast_non_dominated_sort(population, 2)
             fittest_parents = self.tournament_selection(population, 2)
             population = self.create_offspring(fittest_parents, 0.8, 0.3)
             avg_fitness.append(
