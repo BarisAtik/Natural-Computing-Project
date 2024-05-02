@@ -16,6 +16,17 @@ class Node:
 
     def __str__(self):
         return f"Node {self.id} at ({self.x}, {self.y})"
+    
+class Edge:
+    def __init__(self, source, target, speed_limit=60, pollution=0):
+        self.source = source
+        self.target = target
+        self.speed_limit = speed_limit
+        self.pollution = pollution
+
+    def __str__(self):
+        return f"Edge from node {self.source} to node {self.target}"
+
 
 class Representation:
     def __init__(self, nodes_file, edges_file, maptype="sp"):
