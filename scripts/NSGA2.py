@@ -48,32 +48,35 @@ class NSGA2:
 
     def fast_non_dominated_sort(self, population, group_size):
         frontiers = []
-        dominated_solutions = {sol: [] for sol in population}
-        num_dominations = {sol: 0 for sol in population}
-        # dominated_solutions is a dictionary
-        # key values, now we can save for each instance in the population, by whom it is dominated.
+        dominated_solutions = [[] for _ in range(len(population))]
+        num_dominations = [0] * len(population)
+
         assert len(population) % group_size == 0
-        for p in population:
+
+        for i, p in enumerate(population):
             for q in population:
                 p_fitness = self.calculate_fitness(p)
                 q_fitness = self.calculate_fitness(q)
                 if p_fitness < q_fitness:
-                    dominated_solutions[p].append(q)
+                    dominated_solutions[i].append(q)
                 elif p_fitness > q_fitness:
-                    num_dominations[p] += 1
-        frontiers[1] = [p for p in population if num_dominations[p] == 0]
+                    num_dominations[i] += 1
 
-        i = 1
-        while frontiers[i] != []:
+        frontiers.append([p for i, p in enumerate(population) if num_dominations[i] == 0])
+
+        i = 0
+        while frontiers[i]:
             next_front = []
             for p in frontiers[i]:
-                for q in dominated_solutions[p]:
-                    num_dominations[q] -= 1
-                    if num_dominations[q] == 0:
+                for q in dominated_solutions[population.index(p)]:
+                    num_dominations[population.index(q)] -= 1
+                    if num_dominations[population.index(q)] == 0:
                         next_front.append(q)
             i += 1
-            frontiers[i] = next_front
+            frontiers.append(next_front)
+
         return frontiers
+
 
     def crowding_distance_selection(self, frontiers, group_size):
         assert len(frontiers) % group_size == 0
@@ -203,8 +206,8 @@ class NSGA2:
 
         for _ in tqdm(range(self.nr_generations)):
             print(self.fast_non_dominated_sort(population, 2))
-            # sorted_population = self.fast_non_dominated_sort(population, 2)
-            fittest_parents = self.tournament_selection(population, 2)
+            sorted_population = self.fast_non_dominated_sort(population, 2)
+            fittest_parents = self.crowding_distance_selection(sorted_population, 2)
             population = self.create_offspring(fittest_parents, 0.8, 0.3)
             avg_fitness.append(
                 np.mean([self.calculate_fitness(route) for route in population])
