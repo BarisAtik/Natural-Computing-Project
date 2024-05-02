@@ -79,8 +79,6 @@ class NSGA2:
 
 
     def crowding_distance_selection(self, frontiers, group_size):
-        assert len(frontiers) % group_size == 0
-
         parents = []
         i = 0
         while(len(parents)<group_size):
@@ -100,13 +98,13 @@ class NSGA2:
                     for k in range(0, len(frontiers[i])):
                         # Calculate the crowding distance for the individual frontier[i][j]
                         if closest_neighbour_1 is None:
-                            distance_1 = math.dist(frontiers[i][j], frontiers[i][k])
+                            distance_1 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
                             closest_neighbour_1 = (k, distance_1)
                         elif closest_neighbour_2 is None:
-                            distance_2 = math.dist(frontiers[i][j], frontiers[i][k])
+                            distance_2 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
                             closest_neighbour_2 = (k, distance_2)
                         else:
-                            distance_3 = math.dist(frontiers[i][j], frontiers[i][k])
+                            distance_3 = 0 # math.dist(frontiers[i][j], frontiers[i][k])
                             if distance_3 < closest_neighbour_1[1]:
                                 closest_neighbour_1 = (k, distance_3)
                             elif distance_3 < closest_neighbour_2[1]:
@@ -115,11 +113,14 @@ class NSGA2:
                     # Which is the sum of the distances of the two closest neighbours
                     crowding_distance_i_j = closest_neighbour_1[-1] + closest_neighbour_2[-1]
                     crowding_distances.append((frontiers[i][j], crowding_distance_i_j))
+
+                    # Sort crowding_distances based on crowding distances
+                    crowding_distances.sort(key=lambda x: x[1], reverse=True)
+
                 # To fill the population we need k more parents
                 k = group_size - len(parents)
-                k_parents = crowding_distances[:k]
-                for j in range(0, k):
-                    parents.append(k_parents[j][0])
+                k_parents = [pair[0] for pair in crowding_distances[:k]]
+                parents.extend(k_parents)
             i = i + 1
         return parents
 
