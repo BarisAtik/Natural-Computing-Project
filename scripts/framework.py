@@ -70,7 +70,10 @@ class Representation:
         # set the map name correctly
         self.map_name = "Singapore" if maptype == "sp" else "the Netherlands"
 
-    def plot_map(self, route=None, plot_nodes=False):
+        # scale factor for the map, in meters / unit
+        self.figscale = 35 if maptype == "sp" else 275 
+
+    def plot_map(self, route=None, plot_nodes=False, total_distance=None, save_name=False):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:
             if (
@@ -137,6 +140,17 @@ class Representation:
                     f"{id}",
                     fontsize=8,
                 )
+        if total_distance:
+            plt.figtext(
+            0.5,
+            0.95,
+            f"Total distance of route: {total_distance:.2f}",
+            horizontalalignment="center",
+            verticalalignment="center",
+            fontsize=12,
+            )
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
+        if save_name:
+            plt.savefig(save_name)
         plt.show()
