@@ -3,11 +3,13 @@ import csv
 
 
 class Node:
-    def __init__(self, id, x, y, adjacent_nodes=[]):
+    def __init__(self, id, x, y, traffic, pollution, adjacent_nodes=[]):
         self.id = id
         self.x = x
         self.y = y
         self.coordinates = (x, y)
+        self.traffic = traffic
+        self.pollution = pollution
         self.adjacent_nodes = adjacent_nodes
 
     def __str__(self):
@@ -45,10 +47,12 @@ class Representation:
             reader = csv.reader(f)
             next(reader)  # ignore header
             for line in reader:
-                number, x, y = line
+                number, x, y, traffic, pollution = line
                 number = int(number)
                 x = float(x)
                 y = float(y)
+                traffic = float(traffic)
+                pollution = float(pollution)
 
                 # find the adjacent nodes for each node
                 adjacent_nodes = []
@@ -57,7 +61,7 @@ class Representation:
                         adjacent_nodes.append(edge.target)
                     if edge.target == number:
                         adjacent_nodes.append(edge.source)
-                self.nodes[number] = Node(number, x, y, adjacent_nodes)
+                self.nodes[number] = Node(number, x, y, traffic, pollution, adjacent_nodes)
 
         # set the figure size and figure limits correctly
         self.figsize = (20, 10) if maptype == "sp" else (5, 8)
