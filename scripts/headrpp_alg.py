@@ -14,17 +14,19 @@ class HEADRPP:
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
-        self.max_distance = max(
+        self.max_distance = sum(
             [
-                math.dist(node1.coordinates, node2.coordinates)
-                for node1 in self.repr.nodes.values()
-                for node2 in self.repr.nodes.values()
+                math.dist(self.repr.nodes[edge.source].coordinates, self.repr.nodes[edge.target].coordinates)
+                for edge in self.repr.edges
             ]
         )
-        self.max_traffic = max([node.traffic for node in self.repr.nodes.values()])
-        self.max_pollution = max([node.pollution for node in self.repr.nodes.values()])
+        self.max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
+        self.max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
 
-    def generate_route(self, start_node=None, old_route=[]):
+    def generate_route(self, start_node=None, old_route=[], it=1):
+        if it > 1000:
+            return []
+
         route = [start_node] if start_node else [self.start_node]
         while route[-1] != self.end_node:
             forward_nodes = [
@@ -33,16 +35,17 @@ class HEADRPP:
                 if node not in route and node not in old_route
             ]
             if forward_nodes == []:
-                return self.generate_route(start_node, old_route)
+                return self.generate_route(start_node, old_route, it=it+1)
             next_node = random.choice(forward_nodes)
             route.append(next_node)
         return route
 
     def init_population(self):
         initial_population = []
-        for _ in range(self.population_size):
+        while len(initial_population) < self.population_size:
             route = self.generate_route()
-            initial_population.append(route)
+            if route != []:
+                initial_population.append(route)
         return initial_population
 
     def calculate_fitness(self, route):
@@ -127,9 +130,12 @@ class HEADRPP:
     def mutation(self, route):
         mutation_point = random.choice(route[1:-1])
         index = route.index(mutation_point)
-        mutated_route = route[:index] + self.generate_route(
+        new_part = self.generate_route(
             mutation_point, route[:index]
         )
+        if new_part == []:
+            return route
+        mutated_route = route[:index] + new_part
         return mutated_route
 
     def create_offspring(self, parents, p_crossover, p_mutation):
