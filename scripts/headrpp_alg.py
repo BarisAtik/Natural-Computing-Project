@@ -193,7 +193,6 @@ class HEADRPP:
             fitness_values = np.array(
                 [self.calculate_fitness(route) for route in population]
             )
-            # Find route with best fitness
             avg_fitness.append(np.mean(fitness_values[:, 0]))
             best_fitness.append(np.min(fitness_values[:, 0]))
             avg_distance.append(np.mean(fitness_values[:, 1]))
