@@ -61,7 +61,9 @@ class Representation:
                         adjacent_nodes.append(edge.target)
                     if edge.target == number:
                         adjacent_nodes.append(edge.source)
-                self.nodes[number] = Node(number, x, y, traffic, pollution, adjacent_nodes)
+                self.nodes[number] = Node(
+                    number, x, y, traffic, pollution, adjacent_nodes
+                )
 
         # set the figure size and figure limits correctly
         self.figsize = (20, 10) if maptype == "sp" else (5, 8)
@@ -71,9 +73,11 @@ class Representation:
         self.map_name = "Singapore" if maptype == "sp" else "the Netherlands"
 
         # scale factor for the map, in meters / unit
-        self.figscale = 35 if maptype == "sp" else 275 
+        self.figscale = 35 if maptype == "sp" else 275
 
-    def plot_map(self, route=None, plot_nodes=False, total_distance=None, save_name=False):
+    def plot_map(
+        self, route=None, plot_nodes=False, total_distance=None, save_name=False
+    ):
         plt.figure(figsize=self.figsize)
         for edge in self.edges:
             if (
@@ -142,12 +146,12 @@ class Representation:
                 )
         if total_distance:
             plt.figtext(
-            0.5,
-            0.95,
-            f"Total distance of route: {total_distance:.2f}",
-            horizontalalignment="center",
-            verticalalignment="center",
-            fontsize=12,
+                0.5,
+                0.95,
+                f"Total distance of route: {total_distance:.2f}",
+                horizontalalignment="center",
+                verticalalignment="center",
+                fontsize=12,
             )
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
