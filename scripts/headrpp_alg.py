@@ -14,6 +14,15 @@ class HEADRPP:
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
+        self.max_distance = max(
+            [
+                math.dist(node1.coordinates, node2.coordinates)
+                for node1 in self.repr.nodes.values()
+                for node2 in self.repr.nodes.values()
+            ]
+        )
+        self.max_traffic = max([node.traffic for node in self.repr.nodes.values()])
+        self.max_pollution = max([node.pollution for node in self.repr.nodes.values()])
 
     def generate_route(self, start_node=None, old_route=[]):
         route = [start_node] if start_node else [self.start_node]
@@ -62,9 +71,12 @@ class HEADRPP:
             max(pollution),
         )
 
-        normalized_distance = (total_distance - min_distance) / max_distance
-        normalized_traffic = (total_traffic - min_traffic) / max_traffic
-        normalized_pollution = (total_pollution - min_pollution) / max_pollution
+        # normalized_distance = (total_distance - min_distance) / max_distance
+        normalized_distance = total_distance / self.max_distance
+        # normalized_traffic = (total_traffic - min_traffic) / max_traffic
+        normalized_traffic = total_traffic / self.max_traffic
+        # normalized_pollution = (total_pollution - min_pollution) / max_pollution
+        normalized_pollution = total_pollution / self.max_pollution
 
         fitness = (
             self.weights[0] * normalized_distance
