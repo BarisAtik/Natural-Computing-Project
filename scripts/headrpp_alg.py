@@ -34,18 +34,34 @@ class HEADRPP:
         return initial_population
 
     def calculate_fitness(self, route):
-        total_distance = 0
+        total_distance, min_distance, max_distance = 0, np.Inf, 0
         for i in range(0, len(route) - 1):
-            total_distance += math.dist(
+            distance = math.dist(
                 self.repr.nodes[route[i]].coordinates,
                 self.repr.nodes[route[i + 1]].coordinates,
             )
-        total_traffic = sum([self.repr.nodes[node].traffic for node in route])
-        total_pollution = sum([self.repr.nodes[node].pollution for node in route])
+            total_distance += distance
+            if distance < min_distance:
+                min_distance = distance
+            if distance > max_distance:
+                max_distance = distance
 
-        normalized_distance = total_distance / max(total_distance)
-        normalized_traffic = total_traffic / max(total_traffic)
-        normalized_pollution = total_pollution / max(total_pollution)
+        traffic = [self.repr.nodes[node].traffic for node in route]
+        total_traffic, min_traffic, max_traffic = (
+            sum(traffic),
+            min(traffic),
+            max(traffic),
+        )
+        pollution = [self.repr.nodes[node].pollution for node in route]
+        total_pollution, min_pollution, max_pollution = (
+            sum(pollution),
+            min(pollution),
+            max(pollution),
+        )
+
+        normalized_distance = (total_distance - min_distance) / max_distance
+        normalized_traffic = (total_traffic - min_traffic) / max_traffic
+        normalized_pollution = (total_pollution - min_pollution) / max_pollution
 
         fitness = (normalized_distance + normalized_traffic + normalized_pollution) / 3
         return fitness, total_distance, total_traffic, total_pollution
