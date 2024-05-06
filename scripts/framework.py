@@ -141,7 +141,7 @@ class Representation:
                 plt.text(
                     node.x + 0.4,
                     self.figlims[1] - node.y,
-                    f"{node.traffic:.2f}",
+                    f"{id}",
                     fontsize=8,
                 )
         if total_distance:
