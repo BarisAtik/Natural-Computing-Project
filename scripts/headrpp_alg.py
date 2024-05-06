@@ -5,12 +5,15 @@ import matplotlib.pyplot as plt
 
 
 class HEADRPP:
-    def __init__(self, repr, nr_generations, start_node, end_node, population_size):
+    def __init__(
+        self, repr, nr_generations, start_node, end_node, population_size, weights
+    ):
         self.repr = repr
         self.nr_generations = nr_generations
         self.start_node = start_node
         self.end_node = end_node
         self.population_size = population_size
+        self.weights = weights
 
     def generate_route(self, start_node=None, old_route=[]):
         route = [start_node] if start_node else [self.start_node]
@@ -63,7 +66,11 @@ class HEADRPP:
         normalized_traffic = (total_traffic - min_traffic) / max_traffic
         normalized_pollution = (total_pollution - min_pollution) / max_pollution
 
-        fitness = (normalized_distance + normalized_traffic + normalized_pollution) / 3
+        fitness = (
+            self.weights[0] * normalized_distance
+            + self.weights[1] * normalized_traffic
+            + self.weights[2] * normalized_pollution
+        )
         return fitness, total_distance, total_traffic, total_pollution
 
     def tournament_selection(self, population, group_size):
@@ -186,6 +193,7 @@ class HEADRPP:
             fitness_values = np.array(
                 [self.calculate_fitness(route) for route in population]
             )
+            # Find route with best fitness
             avg_fitness.append(np.mean(fitness_values[:, 0]))
             best_fitness.append(np.min(fitness_values[:, 0]))
             avg_distance.append(np.mean(fitness_values[:, 1]))
@@ -194,6 +202,8 @@ class HEADRPP:
             best_traffic.append(np.min(fitness_values[:, 2]))
             avg_pollution.append(np.mean(fitness_values[:, 3]))
             best_pollution.append(np.min(fitness_values[:, 3]))
+
+        best_route = population[np.argmin(fitness_values[:, 0])]
 
         self.plot_results(
             avg_fitness,
@@ -234,6 +244,7 @@ class HEADRPP:
 
         return (
             population,
+            best_route,
             avg_fitness,
             best_fitness,
             avg_distance,
