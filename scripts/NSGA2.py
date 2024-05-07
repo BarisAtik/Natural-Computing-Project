@@ -48,36 +48,37 @@ class NSGA2:
 
     def fast_non_dominated_sort(self, population, group_size):
         frontiers = []
-        dominated_solutions = {sol: [] for sol in population}
-        num_dominations = {sol: 0 for sol in population}
-        # dominated_solutions is a dictionary
-        # key values, now we can save for each instance in the population, by whom it is dominated.
+        dominated_solutions = [[] for _ in range(len(population))]
+        num_dominations = [0] * len(population)
+
         assert len(population) % group_size == 0
-        for p in population:
+
+        for i, p in enumerate(population):
             for q in population:
                 p_fitness = self.calculate_fitness(p)
                 q_fitness = self.calculate_fitness(q)
                 if p_fitness < q_fitness:
-                    dominated_solutions[p].append(q)
+                    dominated_solutions[i].append(q)
                 elif p_fitness > q_fitness:
-                    num_dominations[p] += 1
-        frontiers[1] = [p for p in population if num_dominations[p] == 0]
+                    num_dominations[i] += 1
 
-        i = 1
-        while frontiers[i] != []:
+        frontiers.append([p for i, p in enumerate(population) if num_dominations[i] == 0])
+
+        i = 0
+        while frontiers[i]:
             next_front = []
             for p in frontiers[i]:
-                for q in dominated_solutions[p]:
-                    num_dominations[q] -= 1
-                    if num_dominations[q] == 0:
+                for q in dominated_solutions[population.index(p)]:
+                    num_dominations[population.index(q)] -= 1
+                    if num_dominations[population.index(q)] == 0:
                         next_front.append(q)
             i += 1
-            frontiers[i] = next_front
+            frontiers.append(next_front)
+
         return frontiers
 
-    def crowding_distance_selection(self, frontiers, group_size):
-        assert len(frontiers) % group_size == 0
 
+    def crowding_distance_selection(self, frontiers, group_size):
         parents = []
         i = 0
         while(len(parents)<group_size):
@@ -95,28 +96,43 @@ class NSGA2:
                     closest_neighbour_1 = None
                     closest_neighbour_2 = None
                     for k in range(0, len(frontiers[i])):
+                        sum_feature1_i_j = sum_feature2_i_j = sum_feature3_i_j = 0
+                        sum_feature1_i_k = sum_feature2_i_k = sum_feature3_i_k = 0
+                        for l in range(0, len(frontiers[i][j])):
+                            sum_feature1_i_j += self.repr.nodes[frontiers[i][j][l]].traffic
+                            sum_feature2_i_j += self.repr.nodes[frontiers[i][j][l]].pollution
+                            sum_feature3_i_j += self.repr.nodes[frontiers[i][j][l]].feature3
+                            
+                        for l in range(0, len(frontiers[i][k])):
+                            sum_feature1_i_k += self.repr.nodes[frontiers[i][k][l]].traffic
+                            sum_feature2_i_k += self.repr.nodes[frontiers[i][k][l]].pollution
+                            sum_feature3_i_k += self.repr.nodes[frontiers[i][k][l]].feature3
                         # Calculate the crowding distance for the individual frontier[i][j]
+
+                        coordinate_i_j = (sum_feature1_i_j, sum_feature2_i_j, sum_feature3_i_j) # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_k = (sum_feature1_i_k, sum_feature2_i_k, sum_feature3_i_k) # (sum_feature1, sum_feature2, sum_feature3)
+                        distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
-                            distance_1 = math.dist(frontiers[i][j], frontiers[i][k])
-                            closest_neighbour_1 = (k, distance_1)
+                            closest_neighbour_1 = (k, distance_i_j_k)
                         elif closest_neighbour_2 is None:
-                            distance_2 = math.dist(frontiers[i][j], frontiers[i][k])
-                            closest_neighbour_2 = (k, distance_2)
+                            closest_neighbour_2 = (k, distance_i_j_k)
                         else:
-                            distance_3 = math.dist(frontiers[i][j], frontiers[i][k])
-                            if distance_3 < closest_neighbour_1[1]:
-                                closest_neighbour_1 = (k, distance_3)
-                            elif distance_3 < closest_neighbour_2[1]:
-                                closest_neighbour_2 = (k, distance_3)
+                            if distance_i_j_k < closest_neighbour_1[1]:
+                                closest_neighbour_1 = (k, distance_i_j_k)
+                            elif distance_i_j_k < closest_neighbour_2[1]:
+                                closest_neighbour_2 = (k, distance_i_j_k)
                     # Now we calculate the crowding distance for this individual
                     # Which is the sum of the distances of the two closest neighbours
                     crowding_distance_i_j = closest_neighbour_1[-1] + closest_neighbour_2[-1]
                     crowding_distances.append((frontiers[i][j], crowding_distance_i_j))
+
+                    # Sort crowding_distances based on crowding distances
+                    crowding_distances.sort(key=lambda x: x[1], reverse=True)
+
                 # To fill the population we need k more parents
                 k = group_size - len(parents)
-                k_parents = crowding_distances[:k]
-                for j in range(0, k):
-                    parents.append(k_parents[j][0])
+                k_parents = [pair[0] for pair in crowding_distances[:k]]
+                parents.extend(k_parents)
             i = i + 1
         return parents
 
@@ -202,7 +218,9 @@ class NSGA2:
         best_fitness = [np.min([self.calculate_fitness(route) for route in population])]
 
         for _ in tqdm(range(self.nr_generations)):
-            fittest_parents = self.tournament_selection(population, 2)
+            # print(self.fast_non_dominated_sort(population, 2))
+            sorted_population = self.fast_non_dominated_sort(population, 2)
+            fittest_parents = self.crowding_distance_selection(sorted_population, 2)
             population = self.create_offspring(fittest_parents, 0.8, 0.3)
             avg_fitness.append(
                 np.mean([self.calculate_fitness(route) for route in population])

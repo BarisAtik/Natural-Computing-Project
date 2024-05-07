@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import csv
+import random
 
 
 class Node:
@@ -11,11 +12,13 @@ class Node:
         self.traffic = traffic
         self.pollution = pollution
         self.adjacent_nodes = adjacent_nodes
+        self.traffic = random.random()
+        self.pollution = random.random()
+        self.feature3 = random.random()
 
     def __str__(self):
         return f"Node {self.id} at ({self.x}, {self.y})"
-
-
+    
 class Edge:
     def __init__(self, source, target, speed_limit=60, pollution=0):
         self.source = source
