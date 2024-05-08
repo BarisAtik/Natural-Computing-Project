@@ -229,17 +229,17 @@ class NSGA2:
         save_name=None,
     ):
         plt.figure(figsize=(10, 7))
-        plt.plot(range(nr_generations + 1), avg_fitness, label="Average for HEADRPP")
-        plt.plot(range(nr_generations + 1), best_fitness, label="Best for HEADRPP")
+        plt.plot(range(nr_generations + 1), avg_fitness, label="Average for NSGA2")
+        plt.plot(range(nr_generations + 1), best_fitness, label="Best for NSGA2")
         plt.xlim([0, nr_generations])
         plt.xlabel("Time (generations)")
         plt.ylabel(ylabel)
         plt.title(
-            f"{ylabel} of population over time for the HEADRPP algorithm applied on a map of {map_name}"
+            f"{ylabel} of population over time for the NSGA2 algorithm applied on a map of {map_name}"
         )
         plt.legend()
         if save_name:
-            plt.savefig(save_name + f"_headrpp_{ylabel.replace(' ', '_').lower()}.png")
+            plt.savefig(save_name + f"_nsga2_{ylabel.replace(' ', '_').lower()}.png")
         if show_results:
             plt.show()
         plt.close()
