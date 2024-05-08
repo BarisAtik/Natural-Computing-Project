@@ -150,13 +150,16 @@ class NSGA2:
         return new_route
 
     def crossover(self, parent1, parent2):
-        # child1 = parent1[:]
-        # child2 = parent2[:]
-        # for i in range(len(parent1)):
-        #     if random.random() < 0.5:
-        #         child1[i], child2[i] = child2[i], child1[i]
-        # return child1, child2
-        return parent1, parent2
+        common_nodes = set(parent1) & set(parent2)
+        if len(common_nodes) > 0:
+            crossover_node = random.choice(list(common_nodes))
+            index1 = parent1.index(crossover_node)
+            index2 = parent2.index(crossover_node)
+            child1 = parent1[:index1] + parent2[index2:]
+            child2 = parent2[:index2] + parent1[index1:]
+            return child1, child2
+        else:
+            return parent1, parent2
 
     def mutation(self, route):
         mutation_point = random.choice(route[1:-1])
