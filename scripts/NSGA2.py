@@ -5,12 +5,27 @@ import matplotlib.pyplot as plt
 
 
 class NSGA2:
-    def __init__(self, repr, nr_generations, start_node, end_node, population_size):
+    def __init__(
+        self, repr, nr_generations, start_node, end_node, population_size, weights
+    ):
         self.repr = repr
         self.nr_generations = nr_generations
         self.start_node = start_node
         self.end_node = end_node
         self.population_size = population_size
+        self.weights = weights
+        self.max_distance = sum(
+            [
+                math.dist(
+                    self.repr.nodes[edge.source].coordinates,
+                    self.repr.nodes[edge.target].coordinates,
+                )
+                for edge in self.repr.edges
+            ]
+        )
+        self.max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
+        self.max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
+        self.max_depth = 1000
 
     def generate_route(self, start_node=None, old_route=[]):
         route = [start_node] if start_node else [self.start_node]
