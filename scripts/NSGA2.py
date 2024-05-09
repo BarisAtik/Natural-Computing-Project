@@ -126,21 +126,36 @@ class NSGA2:
                     closest_neighbour_1 = None
                     closest_neighbour_2 = None
                     for k in range(0, len(frontiers[i])):
-                        sum_feature1_i_j = sum_feature2_i_j = sum_feature3_i_j = 0
-                        sum_feature1_i_k = sum_feature2_i_k = sum_feature3_i_k = 0
-                        for l in range(0, len(frontiers[i][j])):
-                            sum_feature1_i_j += self.repr.nodes[frontiers[i][j][l]].traffic
-                            sum_feature2_i_j += self.repr.nodes[frontiers[i][j][l]].pollution
-                            sum_feature3_i_j += self.repr.nodes[frontiers[i][j][l]].feature3
-                            
-                        for l in range(0, len(frontiers[i][k])):
-                            sum_feature1_i_k += self.repr.nodes[frontiers[i][k][l]].traffic
-                            sum_feature2_i_k += self.repr.nodes[frontiers[i][k][l]].pollution
-                            sum_feature3_i_k += self.repr.nodes[frontiers[i][k][l]].feature3
+                        total_distance = 0
+                        for l in range(0, len(frontiers[i][j]) - 1):
+                            total_distance += math.dist(
+                                self.repr.nodes[frontiers[i][j][l]].coordinates,
+                                self.repr.nodes[frontiers[i][j][l + 1]].coordinates,
+                            )
+                        total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][j]])
+                        total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][j]])
+
+                        sum_distance_i_j = total_distance / self.max_distance
+                        sum_traffic_i_j = total_traffic / self.max_traffic
+                        sum_pollution_i_j = total_pollution / self.max_pollution
+
+                        total_distance = 0
+                        for l in range(0, len(frontiers[i][k]) - 1):
+                            total_distance += math.dist(
+                                self.repr.nodes[frontiers[i][k][l]].coordinates,
+                                self.repr.nodes[frontiers[i][k][l + 1]].coordinates,
+                            )
+                        total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][k]])
+                        total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][k]])
+
+                        sum_distance_i_k = total_distance / self.max_distance
+                        sum_traffic_i_k = total_traffic / self.max_traffic
+                        sum_pollution_i_k = total_pollution / self.max_pollution
+                        
                         # Calculate the crowding distance for the individual frontier[i][j]
 
-                        coordinate_i_j = (sum_feature1_i_j, sum_feature2_i_j, sum_feature3_i_j) # (sum_feature1, sum_feature2, sum_feature3)
-                        coordinate_i_k = (sum_feature1_i_k, sum_feature2_i_k, sum_feature3_i_k) # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_j = (sum_distance_i_j , sum_traffic_i_j, sum_pollution_i_j) # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_k = (sum_distance_i_k, sum_traffic_i_k, sum_pollution_i_k) # (sum_feature1, sum_feature2, sum_feature3)
                         distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
                             closest_neighbour_1 = (k, distance_i_j_k)

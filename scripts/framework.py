@@ -12,9 +12,6 @@ class Node:
         self.traffic = traffic
         self.pollution = pollution
         self.adjacent_nodes = adjacent_nodes
-        self.traffic = random.random()
-        self.pollution = random.random()
-        self.feature3 = random.random()
 
     def __str__(self):
         return f"Node {self.id} at ({self.x}, {self.y})"
