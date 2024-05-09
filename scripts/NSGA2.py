@@ -2,6 +2,7 @@ import random, math
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import time
 
 
 class NSGA2:
@@ -73,36 +74,38 @@ class NSGA2:
         )
         return fitness, total_distance, total_traffic, total_pollution
 
-    def fast_non_dominated_sort(self, population, group_size):
+    def fast_non_dominated_sort(self, population):
         frontiers = []
         dominated_solutions = [[] for _ in range(len(population))]
         num_dominations = [0] * len(population)
 
-        assert len(population) % group_size == 0
+        for p_index, p in enumerate(population):
+            for q_index, q in enumerate(population):
+                p_fitness_distance = self.calculate_fitness(p)[1]
+                q_fitness_distance = self.calculate_fitness(q)[1]
+                p_fitness_traffic = self.calculate_fitness(p)[2]
+                q_fitness_traffic = self.calculate_fitness(q)[2]
+                p_fitness_pollution = self.calculate_fitness(p)[3]
+                q_fitness_pollution = self.calculate_fitness(q)[3]
+                if p_fitness_distance < q_fitness_distance and p_fitness_traffic < q_fitness_traffic and p_fitness_pollution < q_fitness_pollution:
+                    dominated_solutions[p_index].append(q_index)
+                    num_dominations[q_index] += 1
 
-        for i, p in enumerate(population):
-            for q in population:
-                p_fitness = self.calculate_fitness(p)[0]
-                q_fitness = self.calculate_fitness(q)[0]
-                if p_fitness < q_fitness:
-                    dominated_solutions[i].append(q)
-                elif p_fitness > q_fitness:
-                    num_dominations[i] += 1
-
-        frontiers.append([p for i, p in enumerate(population) if num_dominations[i] == 0])
-
+        frontiers.append([p_index for p_index, p in enumerate(population) if num_dominations[p_index] == 0])
         i = 0
         while frontiers[i]:
             next_front = []
-            for p in frontiers[i]:
-                for q in dominated_solutions[population.index(p)]:
-                    num_dominations[population.index(q)] -= 1
-                    if num_dominations[population.index(q)] == 0:
-                        next_front.append(q)
+            for p_index in frontiers[i]:
+                for q_index in dominated_solutions[p_index]:
+                    num_dominations[q_index] -= 1
+                    if num_dominations[q_index] == 0:
+                        next_front.append(q_index)
             i += 1
             frontiers.append(next_front)
 
-        return frontiers
+        list_population_members = [[population[i] for i in front] for front in frontiers]
+
+        return list_population_members
 
 
     def crowding_distance_selection(self, frontiers, group_size):
@@ -263,11 +266,20 @@ class NSGA2:
         avg_pollution, best_pollution = [np.mean(fitness_values[:, 3])], [
             np.min(fitness_values[:, 3])
         ]
-
+        n = len(population)
         for _ in tqdm(range(self.nr_generations)):
-            fast_non_dominated_sort = self.fast_non_dominated_sort(population, 2)
-            fittest_parents = self.crowding_distance_selection(fast_non_dominated_sort, 2)
-            population = self.create_offspring(fittest_parents, 0.8, 0.3)
+            offspring = self.create_offspring(population, 0.8, 0.3)
+            population.extend(offspring)
+            # time fast_non_dominated_sort
+            time_start = time.time()
+            frontiers = self.fast_non_dominated_sort(population)
+            time_end = time.time()
+            print(f"Time fast_non_dominated_sort: {time_end - time_start}")
+            time_start = time.time()
+            population = self.crowding_distance_selection(frontiers, n)
+            time_end = time.time()
+            print(f"Time crowding_distance_selection: {time_end - time_start}")
+
             fitness_values = np.array(
                 [self.calculate_fitness(route) for route in population]
             )
