@@ -2,31 +2,31 @@ import random, math
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-import time
 
 
 class NSGA2:
-    def __init__(
-        self, repr, nr_generations, start_node, end_node, population_size, weights
-    ):
+    def __init__(self, repr, nr_generations, start_node, end_node, population_size, weights):
         self.repr = repr
         self.nr_generations = nr_generations
         self.start_node = start_node
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
-        self.max_distance = sum(
-            [
-                math.dist(
-                    self.repr.nodes[edge.source].coordinates,
-                    self.repr.nodes[edge.target].coordinates,
+        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = self.calculate_max_metrics()
+        self.max_depth = 1000
+
+    def calculate_max_metrics(self):
+        max_distance = sum(math.dist(
+                    self.repr.nodes[edge.source].coords,
+                    self.repr.nodes[edge.target].coords,
                 )
                 for edge in self.repr.edges
-            ]
         )
-        self.max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
-        self.max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
-        self.max_depth = 1000
+        max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
+        max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
+        max_tourism = sum([node.tourist for node in self.repr.nodes.values()])
+
+        return max_distance, max_traffic, max_pollution, max_tourism
 
     def generate_route(self, start_node=None, old_route=[], depth=1):
         if depth > self.max_depth:
@@ -54,25 +54,29 @@ class NSGA2:
         return initial_population
 
     def calculate_fitness(self, route):
-        total_distance = 0
-        for i in range(0, len(route) - 1):
-            total_distance += math.dist(
-                self.repr.nodes[route[i]].coordinates,
-                self.repr.nodes[route[i + 1]].coordinates,
+        total_distance = sum(
+            math.dist(
+                self.repr.nodes[route[i]].coords,
+                self.repr.nodes[route[i + 1]].coords,
             )
-        total_traffic = sum([self.repr.nodes[node].traffic for node in route])
-        total_pollution = sum([self.repr.nodes[node].pollution for node in route])
+            for i in range(len(route) - 1)
+        )
+        total_traffic = sum(self.repr.nodes[node].traffic for node in route)
+        total_pollution = sum(self.repr.nodes[node].pollution for node in route)
+        total_tourism = sum(self.repr.nodes[node].tourist for node in route)
 
         normalized_distance = total_distance / self.max_distance
         normalized_traffic = total_traffic / self.max_traffic
         normalized_pollution = total_pollution / self.max_pollution
+        normalized_tourism = total_tourism / self.max_tourism
 
         fitness = (
             self.weights[0] * normalized_distance
             + self.weights[1] * normalized_traffic
             + self.weights[2] * normalized_pollution
+            + self.weights[3] * normalized_tourism
         )
-        return fitness, total_distance, total_traffic, total_pollution
+        return fitness, total_distance, total_traffic, total_pollution, total_tourism
 
     def fast_non_dominated_sort(self, population):
         frontiers = []
@@ -80,33 +84,29 @@ class NSGA2:
         num_dominations = [0] * len(population)
 
         for p_index, p in enumerate(population):
+            p_fitness = self.calculate_fitness(p)
             for q_index, q in enumerate(population):
-                p_fitness_distance = self.calculate_fitness(p)[1]
-                q_fitness_distance = self.calculate_fitness(q)[1]
-                p_fitness_traffic = self.calculate_fitness(p)[2]
-                q_fitness_traffic = self.calculate_fitness(q)[2]
-                p_fitness_pollution = self.calculate_fitness(p)[3]
-                q_fitness_pollution = self.calculate_fitness(q)[3]
-                if p_fitness_distance < q_fitness_distance and p_fitness_traffic < q_fitness_traffic and p_fitness_pollution < q_fitness_pollution:
+                q_fitness = self.calculate_fitness(q)
+                if all(p_fitness[i] < q_fitness[i] for i in range(1, 4)):
                     dominated_solutions[p_index].append(q_index)
                     num_dominations[q_index] += 1
 
-        frontiers.append([p_index for p_index, p in enumerate(population) if num_dominations[p_index] == 0])
+        frontiers.append([p_index for p_index in range(len(population)) if num_dominations[p_index] == 0])
+
         i = 0
-        while frontiers[i]:
+        while frontiers[-1]:
             next_front = []
-            for p_index in frontiers[i]:
+            for p_index in frontiers[-1]:
                 for q_index in dominated_solutions[p_index]:
                     num_dominations[q_index] -= 1
                     if num_dominations[q_index] == 0:
                         next_front.append(q_index)
-            i += 1
             frontiers.append(next_front)
+            i += 1
 
         list_population_members = [[population[i] for i in front] for front in frontiers]
 
         return list_population_members
-
 
     def crowding_distance_selection(self, frontiers, group_size):
         parents = []
@@ -129,8 +129,8 @@ class NSGA2:
                         total_distance = 0
                         for l in range(0, len(frontiers[i][j]) - 1):
                             total_distance += math.dist(
-                                self.repr.nodes[frontiers[i][j][l]].coordinates,
-                                self.repr.nodes[frontiers[i][j][l + 1]].coordinates,
+                                self.repr.nodes[frontiers[i][j][l]].coords,
+                                self.repr.nodes[frontiers[i][j][l + 1]].coords,
                             )
                         total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][j]])
                         total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][j]])
@@ -142,8 +142,8 @@ class NSGA2:
                         total_distance = 0
                         for l in range(0, len(frontiers[i][k]) - 1):
                             total_distance += math.dist(
-                                self.repr.nodes[frontiers[i][k][l]].coordinates,
-                                self.repr.nodes[frontiers[i][k][l + 1]].coordinates,
+                                self.repr.nodes[frontiers[i][k][l]].coords,
+                                self.repr.nodes[frontiers[i][k][l + 1]].coords,
                             )
                         total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][k]])
                         total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][k]])
@@ -281,19 +281,16 @@ class NSGA2:
         avg_pollution, best_pollution = [np.mean(fitness_values[:, 3])], [
             np.min(fitness_values[:, 3])
         ]
+        avg_tourism, best_tourism = [np.mean(fitness_values[:, 4])], [
+            np.min(fitness_values[:, 4])
+        ]
+
         n = len(population)
         for _ in tqdm(range(self.nr_generations)):
             offspring = self.create_offspring(population, 0.8, 0.3)
             population.extend(offspring)
-            # time fast_non_dominated_sort
-            time_start = time.time()
             frontiers = self.fast_non_dominated_sort(population)
-            time_end = time.time()
-            print(f"Time fast_non_dominated_sort: {time_end - time_start}")
-            time_start = time.time()
             population = self.crowding_distance_selection(frontiers, n)
-            time_end = time.time()
-            print(f"Time crowding_distance_selection: {time_end - time_start}")
 
             fitness_values = np.array(
                 [self.calculate_fitness(route) for route in population]
@@ -306,6 +303,8 @@ class NSGA2:
             best_traffic.append(np.min(fitness_values[:, 2]))
             avg_pollution.append(np.mean(fitness_values[:, 3]))
             best_pollution.append(np.min(fitness_values[:, 3]))
+            avg_tourism.append(np.mean(fitness_values[:, 4]))
+            best_tourism.append(np.min(fitness_values[:, 4]))
 
         best_route = population[np.argmin(fitness_values[:, 0])]
 
@@ -323,7 +322,7 @@ class NSGA2:
             best_distance,
             self.nr_generations,
             self.repr.map_name,
-            "Route distance",
+            "Route distance (in meters)",
             show_results,
             save_name,
         )
@@ -332,7 +331,7 @@ class NSGA2:
             best_traffic,
             self.nr_generations,
             self.repr.map_name,
-            "Route traffic",
+            "Route traffic (in 'cars encountered')",
             show_results,
             save_name,
         )
@@ -341,7 +340,16 @@ class NSGA2:
             best_pollution,
             self.nr_generations,
             self.repr.map_name,
-            "Route pollution",
+            "Route pollution (in μg/m^3)",
+            show_results,
+            save_name,
+        )
+        self.plot_results(
+            avg_tourism,
+            best_tourism,
+            self.nr_generations,
+            self.repr.map_name,
+            "Route tourism (in 'tourists encountered')",
             show_results,
             save_name,
         )
@@ -357,4 +365,6 @@ class NSGA2:
             best_traffic,
             avg_pollution,
             best_pollution,
+            avg_tourism,
+            best_tourism,
         )
