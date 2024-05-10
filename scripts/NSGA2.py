@@ -5,22 +5,27 @@ import matplotlib.pyplot as plt
 
 
 class NSGA2:
-    def __init__(self, repr, nr_generations, start_node, end_node, population_size, weights):
+    def __init__(
+        self, repr, nr_generations, start_node, end_node, population_size, weights
+    ):
         self.repr = repr
         self.nr_generations = nr_generations
         self.start_node = start_node
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
-        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = self.calculate_max_metrics()
+        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = (
+            self.calculate_max_metrics()
+        )
         self.max_depth = 1000
 
     def calculate_max_metrics(self):
-        max_distance = self.repr.scale_factor * sum(math.dist(
-                    self.repr.nodes[edge.source].coords,
-                    self.repr.nodes[edge.target].coords,
-                )
-                for edge in self.repr.edges
+        max_distance = self.repr.scale_factor * sum(
+            math.dist(
+                self.repr.nodes[edge.source].coords,
+                self.repr.nodes[edge.target].coords,
+            )
+            for edge in self.repr.edges
         )
         max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
         max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
@@ -91,7 +96,13 @@ class NSGA2:
                     dominated_solutions[p_index].append(q_index)
                     num_dominations[q_index] += 1
 
-        frontiers.append([p_index for p_index in range(len(population)) if num_dominations[p_index] == 0])
+        frontiers.append(
+            [
+                p_index
+                for p_index in range(len(population))
+                if num_dominations[p_index] == 0
+            ]
+        )
 
         i = 0
         while frontiers[-1]:
@@ -104,15 +115,17 @@ class NSGA2:
             frontiers.append(next_front)
             i += 1
 
-        list_population_members = [[population[i] for i in front] for front in frontiers]
+        list_population_members = [
+            [population[i] for i in front] for front in frontiers
+        ]
 
         return list_population_members
 
     def crowding_distance_selection(self, frontiers, group_size):
         parents = []
         i = 0
-        while(len(parents)<group_size):
-            if ((len(frontiers[i])+len(parents)) <= group_size):
+        while len(parents) < group_size:
+            if (len(frontiers[i]) + len(parents)) <= group_size:
                 parents.extend(frontiers[i])
             else:
                 # Now we select the one's with the biggest crowding distance
@@ -132,8 +145,15 @@ class NSGA2:
                                 self.repr.nodes[frontiers[i][j][l]].coords,
                                 self.repr.nodes[frontiers[i][j][l + 1]].coords,
                             )
-                        total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][j]])
-                        total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][j]])
+                        total_traffic = sum(
+                            [self.repr.nodes[node].traffic for node in frontiers[i][j]]
+                        )
+                        total_pollution = sum(
+                            [
+                                self.repr.nodes[node].pollution
+                                for node in frontiers[i][j]
+                            ]
+                        )
 
                         sum_distance_i_j = total_distance / self.max_distance
                         sum_traffic_i_j = total_traffic / self.max_traffic
@@ -145,17 +165,32 @@ class NSGA2:
                                 self.repr.nodes[frontiers[i][k][l]].coords,
                                 self.repr.nodes[frontiers[i][k][l + 1]].coords,
                             )
-                        total_traffic = sum([self.repr.nodes[node].traffic for node in frontiers[i][k]])
-                        total_pollution = sum([self.repr.nodes[node].pollution for node in frontiers[i][k]])
+                        total_traffic = sum(
+                            [self.repr.nodes[node].traffic for node in frontiers[i][k]]
+                        )
+                        total_pollution = sum(
+                            [
+                                self.repr.nodes[node].pollution
+                                for node in frontiers[i][k]
+                            ]
+                        )
 
                         sum_distance_i_k = total_distance / self.max_distance
                         sum_traffic_i_k = total_traffic / self.max_traffic
                         sum_pollution_i_k = total_pollution / self.max_pollution
-                        
+
                         # Calculate the crowding distance for the individual frontier[i][j]
 
-                        coordinate_i_j = (sum_distance_i_j , sum_traffic_i_j, sum_pollution_i_j) # (sum_feature1, sum_feature2, sum_feature3)
-                        coordinate_i_k = (sum_distance_i_k, sum_traffic_i_k, sum_pollution_i_k) # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_j = (
+                            sum_distance_i_j,
+                            sum_traffic_i_j,
+                            sum_pollution_i_j,
+                        )  # (sum_feature1, sum_feature2, sum_feature3)
+                        coordinate_i_k = (
+                            sum_distance_i_k,
+                            sum_traffic_i_k,
+                            sum_pollution_i_k,
+                        )  # (sum_feature1, sum_feature2, sum_feature3)
                         distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
                             closest_neighbour_1 = (k, distance_i_j_k)
@@ -168,7 +203,9 @@ class NSGA2:
                                 closest_neighbour_2 = (k, distance_i_j_k)
                     # Now we calculate the crowding distance for this individual
                     # Which is the sum of the distances of the two closest neighbours
-                    crowding_distance_i_j = closest_neighbour_1[-1] + closest_neighbour_2[-1]
+                    crowding_distance_i_j = (
+                        closest_neighbour_1[-1] + closest_neighbour_2[-1]
+                    )
                     crowding_distances.append((frontiers[i][j], crowding_distance_i_j))
 
                     # Sort crowding_distances based on crowding distances
@@ -257,7 +294,10 @@ class NSGA2:
         )
         plt.legend()
         if save_name:
-            plt.savefig(save_name + f"_nsga2_{ylabel.split('(')[0].replace(' ', '_').lower()}.png")
+            plt.savefig(
+                save_name
+                + f"_nsga2_{ylabel.split('(')[0].replace(' ', '_').lower()}.png"
+            )
         if show_results:
             plt.show()
         plt.close()
@@ -313,7 +353,7 @@ class NSGA2:
             best_fitness,
             self.nr_generations,
             self.repr.map_name,
-            "Fitness",
+            "Overall fitness (weighted sum of distance, traffic, pollution, and tourism)",
             show_results,
             save_name,
         )

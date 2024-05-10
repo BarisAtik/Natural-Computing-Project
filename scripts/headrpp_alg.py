@@ -5,22 +5,27 @@ import matplotlib.pyplot as plt
 
 
 class HEADRPP:
-    def __init__(self, repr, nr_generations, start_node, end_node, population_size, weights):
+    def __init__(
+        self, repr, nr_generations, start_node, end_node, population_size, weights
+    ):
         self.repr = repr
         self.nr_generations = nr_generations
         self.start_node = start_node
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
-        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = self.calculate_max_metrics()
+        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = (
+            self.calculate_max_metrics()
+        )
         self.max_depth = 1000
 
     def calculate_max_metrics(self):
-        max_distance = self.repr.scale_factor * sum(math.dist(
-                    self.repr.nodes[edge.source].coords,
-                    self.repr.nodes[edge.target].coords,
-                )
-                for edge in self.repr.edges
+        max_distance = self.repr.scale_factor * sum(
+            math.dist(
+                self.repr.nodes[edge.source].coords,
+                self.repr.nodes[edge.target].coords,
+            )
+            for edge in self.repr.edges
         )
         max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
         max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
@@ -168,7 +173,10 @@ class HEADRPP:
         )
         plt.legend()
         if save_name:
-            plt.savefig(save_name + f"_headrpp_{ylabel.split('(')[0][:-1].replace(' ', '_').lower()}.png")
+            plt.savefig(
+                save_name
+                + f"_headrpp_{ylabel.split('(')[0][:-1].replace(' ', '_').lower()}.png"
+            )
         if show_results:
             plt.show()
         plt.close()
@@ -220,7 +228,7 @@ class HEADRPP:
             best_fitness,
             self.nr_generations,
             self.repr.map_name,
-            "Fitness",
+            "Overall fitness (weighted sum of distance, traffic, pollution, and tourism)",
             show_results,
             save_name,
         )
