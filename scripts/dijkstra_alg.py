@@ -1,18 +1,35 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class DIJKSTRA:
+    """
+    A class to represent the Dijkstra algorithm for finding the shortest path between two nodes.
+
+    Attributes:
+    - repr: The Representation object representing the network.
+    - start_node: The ID of the start node.
+    - end_node: The ID of the end node.
+    """
+
     def __init__(self, repr, start_node, end_node):
         self.repr = repr
         self.start_node = start_node
         self.end_node = end_node
 
-    def plot_results(self, path, total_distance, save_name=False):
-        # Plot the results
-        self.repr.plot_map(path, plot_nodes=True, total_distance=total_distance, save_name=save_name)
+    def run_algorithm(self, weights=[1,0,0,0], show_results=True, save_name=False):
+        """
+        Run the Dijkstra algorithm to find the shortest path between two nodes.
 
-    def run_algorithm(self, show_results=True, save_name=False):
+        Args:
+        - weights: A list of weights for the distance, traffic, pollution, and tourist metrics.
+        - show_results: A boolean indicating whether to plot the results.
+        - save_name: The name of the file to save the plot to.
+
+        Returns:
+        - path: A list of node IDs representing the shortest path.
+        - total_distance: The total distance of the path.
+        """
+        
         # Initialize the distance and predecessor dictionaries
         distances = {node: float("inf") for node in self.repr.nodes}
         preds = {node: None for node in self.repr.nodes}
@@ -30,8 +47,12 @@ class DIJKSTRA:
 
             # Update the distances and predecessors of the adjacent nodes
             for node in self.repr.nodes[current_node].adjacent_nodes:
-                dist = np.linalg.norm(np.array(self.repr.nodes[node].coordinates) - np.array(self.repr.nodes[current_node].coordinates))
-                if distances[node] > distances[current_node] + dist:
+                dist = weights[0] * self.repr.scale_factor * np.linalg.norm(np.array(self.repr.nodes[node].coords) - np.array(self.repr.nodes[current_node].coords)) \
+                     + weights[1] * self.repr.nodes[node].traffic \
+                     + weights[2] * self.repr.nodes[node].pollution \
+                     + weights[3] * self.repr.nodes[node].tourist
+
+                if distances[node] > distances[current_node] + dist and preds[current_node] != node:
                     distances[node] = distances[current_node] + dist
                     preds[node] = current_node
         
@@ -45,11 +66,13 @@ class DIJKSTRA:
         # Calculate the total distance
         total_distance = 0
         for i in range(len(path) - 1):
-            total_distance += np.linalg.norm(np.array(self.repr.nodes[path[i]].coordinates) - np.array(self.repr.nodes[path[i+1]].coordinates))
+            total_distance += weights[0] * self.repr.scale_factor * np.linalg.norm(np.array(self.repr.nodes[path[i]].coords) - np.array(self.repr.nodes[path[i+1]].coords)) \
+                            + weights[1] * self.repr.nodes[path[i]].traffic \
+                            + weights[2] * self.repr.nodes[path[i]].pollution \
+                            + weights[3] * self.repr.nodes[path[i]].tourist
         
         # Plot the results
         if show_results:
-            self.plot_results(path, total_distance, save_name)
+            self.repr.plot_map(path, plot_nodes=True, total_distance=total_distance, save_name=save_name)
 
         return path, total_distance
-
