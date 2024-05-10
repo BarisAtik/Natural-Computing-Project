@@ -16,7 +16,7 @@ class HEADRPP:
         self.max_depth = 1000
 
     def calculate_max_metrics(self):
-        max_distance = sum(math.dist(
+        max_distance = self.repr.scale_factor * sum(math.dist(
                     self.repr.nodes[edge.source].coords,
                     self.repr.nodes[edge.target].coords,
                 )
@@ -54,7 +54,7 @@ class HEADRPP:
         return initial_population
 
     def calculate_fitness(self, route):
-        total_distance = sum(
+        total_distance = self.repr.scale_factor * sum(
             math.dist(
                 self.repr.nodes[route[i]].coords,
                 self.repr.nodes[route[i + 1]].coords,
@@ -164,11 +164,11 @@ class HEADRPP:
         plt.xlabel("Time (generations)")
         plt.ylabel(ylabel)
         plt.title(
-            f"{ylabel} of population over time for the HEADRPP algorithm applied on a map of {map_name}"
+            f"{ylabel.split('(')[0][:-1]} of population over time for the HEADRPP algorithm applied on a map of {map_name}"
         )
         plt.legend()
         if save_name:
-            plt.savefig(save_name + f"_headrpp_{ylabel.replace(' ', '_').lower()}.png")
+            plt.savefig(save_name + f"_headrpp_{ylabel.split('(')[0][:-1].replace(' ', '_').lower()}.png")
         if show_results:
             plt.show()
         plt.close()

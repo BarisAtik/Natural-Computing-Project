@@ -16,7 +16,7 @@ class NSGA2:
         self.max_depth = 1000
 
     def calculate_max_metrics(self):
-        max_distance = sum(math.dist(
+        max_distance = self.repr.scale_factor * sum(math.dist(
                     self.repr.nodes[edge.source].coords,
                     self.repr.nodes[edge.target].coords,
                 )
@@ -54,7 +54,7 @@ class NSGA2:
         return initial_population
 
     def calculate_fitness(self, route):
-        total_distance = sum(
+        total_distance = self.repr.scale_factor * sum(
             math.dist(
                 self.repr.nodes[route[i]].coords,
                 self.repr.nodes[route[i + 1]].coords,
@@ -257,7 +257,7 @@ class NSGA2:
         )
         plt.legend()
         if save_name:
-            plt.savefig(save_name + f"_nsga2_{ylabel.replace(' ', '_').lower()}.png")
+            plt.savefig(save_name + f"_nsga2_{ylabel.split('(')[0].replace(' ', '_').lower()}.png")
         if show_results:
             plt.show()
         plt.close()
