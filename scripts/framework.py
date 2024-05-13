@@ -131,9 +131,9 @@ class Representation:
             scale_factor = 35
             map_name = "Singapore"
         elif maptype == "nl":
-            figsize = (5, 8)
-            figlims = (850, 1000)
-            scale_factor = 275
+            figsize = (7.5, 12)
+            figlims = (475, 550)
+            scale_factor = 600
             map_name = "the Netherlands"
         else:
             raise ValueError(f"Invalid map type: {maptype}")
@@ -165,10 +165,15 @@ class Representation:
             if (
                 route
                 and edge.source in route
-                and (index := route.index(edge.source))
                 and (
-                    (index + 1 < len(route) and edge.target == route[index + 1])
-                    or (index - 1 >= 0 and edge.target == route[index - 1])
+                    (
+                        route.index(edge.source) + 1 < len(route)
+                        and edge.target == route[route.index(edge.source) + 1]
+                    )
+                    or (
+                        route.index(edge.source) - 1 >= 0
+                        and edge.target == route[route.index(edge.source) - 1]
+                    )
                 )
             ):
 
