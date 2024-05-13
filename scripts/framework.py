@@ -1,30 +1,32 @@
 import matplotlib.pyplot as plt
 import csv
 
+
 class Node:
     """
     Represents a node in the network.
-    
+
     Attributes:
     - id: The unique identifier of the node.
     - coords: The coordinates of the node.
     - traffic: The traffic level at the node.
     - pollution: The pollution level at the node.
-    - tourist: The touristic level at the node.
+    - hotspots: The hotspot level at the node.
     - adjacent_nodes: The list of nodes adjacent to this node (as IDs).
     """
 
-    def __init__(self, id, coords, traffic, pollution, tourist, adjacent_nodes):
+    def __init__(self, id, coords, traffic, pollution, hotspots, adjacent_nodes):
         self.id = id
         self.coords = coords
         self.traffic = traffic
         self.pollution = pollution
-        self.tourist = tourist
+        self.hotspots = hotspots
         self.adjacent_nodes = adjacent_nodes
 
     def __str__(self):
         return f"Node {self.id} at ({self.coords[0]}, {self.coords[1]})"
-    
+
+
 class Edge:
     """
     Represents an edge in the network.
@@ -58,7 +60,9 @@ class Representation:
     def __init__(self, nodes_file, edges_file, maptype="sp"):
         self.edges = self.read_edges(edges_file)
         self.nodes = self.read_nodes(nodes_file, self.edges)
-        self.figsize, self.figlims, self.scale_factor, self.map_name = self.set_figure_properties(maptype)
+        self.figsize, self.figlims, self.scale_factor, self.map_name = (
+            self.set_figure_properties(maptype)
+        )
 
     def read_edges(self, edges_file):
         """
@@ -66,7 +70,7 @@ class Representation:
 
         Args:
         - edges_file: The path to the CSV file containing the edges.
-        
+
         Returns:
         - A list of Edge objects.
         """
@@ -97,11 +101,14 @@ class Representation:
             reader = csv.reader(f)
             next(reader)  # ignore header
             for line in reader:
-                node_id, x, y, traffic, pollution = map(float, line)
-                # TODO add tourist level
+                node_id, x, y, traffic, pollution, hotspots = map(float, line)
                 node_id = int(node_id)
-                adjacent_nodes = [edge.target for edge in edges if edge.source == node_id] + [edge.source for edge in edges if edge.target == node_id]
-                nodes[node_id] = Node(node_id, (x, y), traffic, pollution, 1, adjacent_nodes)
+                adjacent_nodes = [
+                    edge.target for edge in edges if edge.source == node_id
+                ] + [edge.source for edge in edges if edge.target == node_id]
+                nodes[node_id] = Node(
+                    node_id, (x, y), traffic, pollution, hotspots, adjacent_nodes
+                )
         return nodes
 
     def set_figure_properties(self, maptype):
@@ -132,8 +139,15 @@ class Representation:
             raise ValueError(f"Invalid map type: {maptype}")
 
         return figsize, figlims, scale_factor, map_name
-    
-    def plot_map(self, route=None, plot_nodes=False, show_axes=True, total_distance=None, save_name=False):
+
+    def plot_map(
+        self,
+        route=None,
+        plot_nodes=False,
+        show_axes=True,
+        total_distance=None,
+        save_name=False,
+    ):
         """
         Plot the map with the edges and nodes.
 
@@ -148,37 +162,89 @@ class Representation:
         plt.figure(figsize=self.figsize)
 
         for edge in self.edges:
-            if route and edge.source in route and (index := route.index(edge.source)) and (
-               (index+1 < len(route) and edge.target == route[index+1]) or 
-               (index-1 >= 0 and edge.target == route[index-1])):
-                
+            if (
+                route
+                and edge.source in route
+                and (index := route.index(edge.source))
+                and (
+                    (index + 1 < len(route) and edge.target == route[index + 1])
+                    or (index - 1 >= 0 and edge.target == route[index - 1])
+                )
+            ):
+
                 color = "red"
                 linewidth = 3
             else:
                 color = "black"
                 linewidth = 1
-            plt.plot([self.nodes[edge.source].coords[0], self.nodes[edge.target].coords[0]], [self.figlims[1] - self.nodes[edge.source].coords[1], self.figlims[1] - self.nodes[edge.target].coords[1]], color=color, linewidth=linewidth)
-        
+            plt.plot(
+                [self.nodes[edge.source].coords[0], self.nodes[edge.target].coords[0]],
+                [
+                    self.figlims[1] - self.nodes[edge.source].coords[1],
+                    self.figlims[1] - self.nodes[edge.target].coords[1],
+                ],
+                color=color,
+                linewidth=linewidth,
+            )
+
         if route:
-            plt.scatter(self.nodes[route[0]].coords[0], self.figlims[1] - self.nodes[route[0]].coords[1], color="black", zorder=3, s=50)
-            plt.text(self.nodes[route[0]].coords[0] + 5, self.figlims[1] - self.nodes[route[0]].coords[1] + 5, "Start", fontsize=12)
-            plt.scatter(self.nodes[route[-1]].coords[0], self.figlims[1] - self.nodes[route[-1]].coords[1], color="black", zorder=3, s=50)
-            plt.text(self.nodes[route[-1]].coords[0] + 5, self.figlims[1] - self.nodes[route[-1]].coords[1] + 5, "End", fontsize=12)
-        
+            plt.scatter(
+                self.nodes[route[0]].coords[0],
+                self.figlims[1] - self.nodes[route[0]].coords[1],
+                color="black",
+                zorder=3,
+                s=50,
+            )
+            plt.text(
+                self.nodes[route[0]].coords[0] + 5,
+                self.figlims[1] - self.nodes[route[0]].coords[1] + 5,
+                "Start",
+                fontsize=12,
+            )
+            plt.scatter(
+                self.nodes[route[-1]].coords[0],
+                self.figlims[1] - self.nodes[route[-1]].coords[1],
+                color="black",
+                zorder=3,
+                s=50,
+            )
+            plt.text(
+                self.nodes[route[-1]].coords[0] + 5,
+                self.figlims[1] - self.nodes[route[-1]].coords[1] + 5,
+                "End",
+                fontsize=12,
+            )
+
         if plot_nodes:
             for id, node in self.nodes.items():
-                plt.scatter(node.coords[0], self.figlims[1] - node.coords[1], color="black", s=12)
-                plt.text(node.coords[0] + 0.4, self.figlims[1] - node.coords[1], f"{id}", fontsize=8)
-        
+                plt.scatter(
+                    node.coords[0],
+                    self.figlims[1] - node.coords[1],
+                    color="black",
+                    s=12,
+                )
+                plt.text(
+                    node.coords[0] + 0.4,
+                    self.figlims[1] - node.coords[1],
+                    f"{id}",
+                    fontsize=8,
+                )
+
         if total_distance:
-            plt.figtext(0.5, 0.95, f"Total distance of route: {total_distance:.2f}", horizontalalignment="center", verticalalignment="center", fontsize=12)
-        
+            plt.figtext(
+                0.5,
+                0.95,
+                f"Total distance of route: {total_distance:.2f}",
+                horizontalalignment="center",
+                verticalalignment="center",
+                fontsize=12,
+            )
+
         if not show_axes:
             plt.axis("off")
 
         plt.xlim(0, self.figlims[0])
         plt.ylim(0, self.figlims[1])
-        
 
         if save_name:
             plt.savefig(save_name)

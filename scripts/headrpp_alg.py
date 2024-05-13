@@ -14,7 +14,7 @@ class HEADRPP:
         self.end_node = end_node
         self.population_size = population_size
         self.weights = weights
-        self.max_distance, self.max_traffic, self.max_pollution, self.max_tourism = (
+        self.max_distance, self.max_traffic, self.max_pollution, self.max_hotspots = (
             self.calculate_max_metrics()
         )
         self.max_depth = 1000
@@ -29,9 +29,9 @@ class HEADRPP:
         )
         max_traffic = sum([node.traffic for node in self.repr.nodes.values()])
         max_pollution = sum([node.pollution for node in self.repr.nodes.values()])
-        max_tourism = sum([node.tourist for node in self.repr.nodes.values()])
+        max_hotspots = sum([node.hotspots for node in self.repr.nodes.values()])
 
-        return max_distance, max_traffic, max_pollution, max_tourism
+        return max_distance, max_traffic, max_pollution, max_hotspots
 
     def generate_route(self, start_node=None, old_route=[], depth=1):
         if depth > self.max_depth:
@@ -68,20 +68,20 @@ class HEADRPP:
         )
         total_traffic = sum(self.repr.nodes[node].traffic for node in route)
         total_pollution = sum(self.repr.nodes[node].pollution for node in route)
-        total_tourism = sum(self.repr.nodes[node].tourist for node in route)
+        total_hotspots = sum(self.repr.nodes[node].hotspots for node in route)
 
         normalized_distance = total_distance / self.max_distance
         normalized_traffic = total_traffic / self.max_traffic
         normalized_pollution = total_pollution / self.max_pollution
-        normalized_tourism = total_tourism / self.max_tourism
+        normalized_hotspots = total_hotspots / self.max_hotspots
 
         fitness = (
             self.weights[0] * normalized_distance
             + self.weights[1] * normalized_traffic
             + self.weights[2] * normalized_pollution
-            + self.weights[3] * normalized_tourism
+            + self.weights[3] * (1 - normalized_hotspots)
         )
-        return fitness, total_distance, total_traffic, total_pollution, total_tourism
+        return fitness, total_distance, total_traffic, total_pollution, total_hotspots
 
     def tournament_selection(self, population, group_size):
         assert len(population) % group_size == 0
@@ -200,8 +200,8 @@ class HEADRPP:
         avg_pollution, best_pollution = [np.mean(fitness_values[:, 3])], [
             np.min(fitness_values[:, 3])
         ]
-        avg_tourism, best_tourism = [np.mean(fitness_values[:, 4])], [
-            np.min(fitness_values[:, 4])
+        avg_hotspots, best_hotspots = [np.mean(fitness_values[:, 4])], [
+            np.max(fitness_values[:, 4])
         ]
 
         for _ in tqdm(range(self.nr_generations)):
@@ -218,8 +218,8 @@ class HEADRPP:
             best_traffic.append(np.min(fitness_values[:, 2]))
             avg_pollution.append(np.mean(fitness_values[:, 3]))
             best_pollution.append(np.min(fitness_values[:, 3]))
-            avg_tourism.append(np.mean(fitness_values[:, 4]))
-            best_tourism.append(np.min(fitness_values[:, 4]))
+            avg_hotspots.append(np.mean(fitness_values[:, 4]))
+            best_hotspots.append(np.max(fitness_values[:, 4]))
 
         best_route = population[np.argmin(fitness_values[:, 0])]
 
@@ -228,7 +228,7 @@ class HEADRPP:
             best_fitness,
             self.nr_generations,
             self.repr.map_name,
-            "Overall fitness (weighted sum of distance, traffic, pollution, and tourism)",
+            "Overall fitness (weighted sum of distance, traffic, pollution, and hotspots)",
             show_results,
             save_name,
         )
@@ -260,11 +260,11 @@ class HEADRPP:
             save_name,
         )
         self.plot_results(
-            avg_tourism,
-            best_tourism,
+            avg_hotspots,
+            best_hotspots,
             self.nr_generations,
             self.repr.map_name,
-            "Route tourism (in 'tourists encountered')",
+            "Route hotspots (in 'hotspots score')",
             show_results,
             save_name,
         )
@@ -280,6 +280,6 @@ class HEADRPP:
             best_traffic,
             avg_pollution,
             best_pollution,
-            avg_tourism,
-            best_tourism,
+            avg_hotspots,
+            best_hotspots,
         )
