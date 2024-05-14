@@ -17,9 +17,9 @@ class NSGA2(GeneticAlgorithm):
                 q_fitness = self.calculate_fitness(q)
                 if all(
                     p_fitness[i + 1] < q_fitness[i + 1]
-                    for i in range(4)
+                    for i in range(3)
                     if self.weights[i] > 0
-                ):
+                ) and (p_fitness[3] > q_fitness[3] or self.weights[3] == 0):
                     dominated_solutions[p_index].append(q_index)
                     num_dominations[q_index] += 1
 
@@ -88,7 +88,7 @@ class NSGA2(GeneticAlgorithm):
                         sum_distance_i_j = total_distance / self.max_distance
                         sum_traffic_i_j = total_traffic / self.max_traffic
                         sum_pollution_i_j = total_pollution / self.max_pollution
-                        sum_hotspots_i_j = total_hotspots / self.max_hotspots
+                        sum_hotspots_i_j = 1 - total_hotspots / self.max_hotspots
 
                         total_distance = 0
                         for l in range(0, len(frontiers[i][k]) - 1):
@@ -112,7 +112,7 @@ class NSGA2(GeneticAlgorithm):
                         sum_distance_i_k = total_distance / self.max_distance
                         sum_traffic_i_k = total_traffic / self.max_traffic
                         sum_pollution_i_k = total_pollution / self.max_pollution
-                        sum_hotspots_i_k = total_hotspots / self.max_hotspots
+                        sum_hotspots_i_k = 1 - total_hotspots / self.max_hotspots
 
                         # Calculate the crowding distance for the individual frontier[i][j]
 
