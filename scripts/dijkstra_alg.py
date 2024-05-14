@@ -38,6 +38,9 @@ class DIJKSTRA:
         # Initialize the set of visited nodes
         visited = set()
 
+        # Find the maximum hotspot value
+        max_hotspot_value = max([self.repr.nodes[nd].hotspots for nd in self.repr.nodes])
+
         # Run the algorithm
         while visited != set(self.repr.nodes):
             # Find the node with the smallest distance
@@ -58,7 +61,7 @@ class DIJKSTRA:
                     )
                     + weights[1] * self.repr.nodes[node].traffic
                     + weights[2] * self.repr.nodes[node].pollution
-                    + weights[3] * (1 - self.repr.nodes[node].hotspots)
+                    + weights[3] * (max_hotspot_value - self.repr.nodes[node].hotspots)
                 )
 
                 if (
