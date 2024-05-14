@@ -15,7 +15,11 @@ class NSGA2(GeneticAlgorithm):
             p_fitness = self.calculate_fitness(p)
             for q_index, q in enumerate(population):
                 q_fitness = self.calculate_fitness(q)
-                if all(p_fitness[i] < q_fitness[i] for i in range(1, 4)):
+                if all(
+                    p_fitness[i + 1] < q_fitness[i + 1]
+                    for i in range(4)
+                    if self.weights[i] > 0
+                ):
                     dominated_solutions[p_index].append(q_index)
                     num_dominations[q_index] += 1
 
@@ -113,16 +117,16 @@ class NSGA2(GeneticAlgorithm):
                         # Calculate the crowding distance for the individual frontier[i][j]
 
                         coordinate_i_j = (
-                            sum_distance_i_j,
-                            sum_traffic_i_j,
-                            sum_pollution_i_j,
-                            sum_hotspots_i_j,
+                            self.weights[0] * sum_distance_i_j,
+                            self.weights[1] * sum_traffic_i_j,
+                            self.weights[2] * sum_pollution_i_j,
+                            self.weights[3] * sum_hotspots_i_j,
                         )  # (sum_feature1, sum_feature2, sum_feature3)
                         coordinate_i_k = (
-                            sum_distance_i_k,
-                            sum_traffic_i_k,
-                            sum_pollution_i_k,
-                            sum_hotspots_i_k,
+                            self.weights[0] * sum_distance_i_k,
+                            self.weights[1] * sum_traffic_i_k,
+                            self.weights[2] * sum_pollution_i_k,
+                            self.weights[3] * sum_hotspots_i_k,
                         )  # (sum_feature1, sum_feature2, sum_feature3)
                         distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
