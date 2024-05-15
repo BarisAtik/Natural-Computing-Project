@@ -1,7 +1,6 @@
-import random, math
+import random
 import numpy as np
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 from scripts.genetic_algorithm import GeneticAlgorithm
 
 
