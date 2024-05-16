@@ -4,7 +4,16 @@ import matplotlib.pyplot as plt
 
 class GeneticAlgorithm:
     def __init__(
-        self, repr, nr_generations, start_node, end_node, population_size, weights
+        self,
+        repr,
+        nr_generations,
+        start_node,
+        end_node,
+        population_size,
+        weights,
+        p_crossover,
+        p_mutation,
+        group_size,
     ):
         self.repr = repr
         self.nr_generations = nr_generations
@@ -16,6 +25,9 @@ class GeneticAlgorithm:
             self.calculate_max_metrics()
         )
         self.max_depth = 1000
+        self.p_crossover = p_crossover
+        self.p_mutation = p_mutation
+        self.group_size = group_size
 
     def calculate_max_metrics(self):
         max_distance = self.repr.scale_factor * sum(
@@ -115,20 +127,20 @@ class GeneticAlgorithm:
         mutated_route = route[:index] + new_part
         return mutated_route
 
-    def create_offspring(self, parents, p_crossover, p_mutation):
+    def create_offspring(self, parents):
         offspring = []
         choices = range(len(parents))
         for _ in range(0, self.population_size, 2):
             p1 = parents[random.choice(choices)].copy()
             p2 = parents[random.choice(choices)].copy()
-            if random.random() <= p_crossover:
+            if random.random() <= self.p_crossover:
                 p1, p2 = self.crossover(p1, p2)
                 p1 = self.loop_anneal(p1)
                 p2 = self.loop_anneal(p2)
-            if random.random() <= p_mutation:
+            if random.random() <= self.p_mutation:
                 p1 = self.mutation(p1)
                 p1 = self.loop_anneal(p1)
-            if random.random() <= p_mutation:
+            if random.random() <= self.p_mutation:
                 p2 = self.mutation(p2)
                 p2 = self.loop_anneal(p2)
             offspring.append(p1)
