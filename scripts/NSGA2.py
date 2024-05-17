@@ -1,7 +1,6 @@
-import random, math
+import math
 import numpy as np
-from tqdm import tqdm
-import matplotlib.pyplot as plt
+from tqdm.auto import tqdm
 from scripts.genetic_algorithm import GeneticAlgorithm
 
 
@@ -155,7 +154,7 @@ class NSGA2(GeneticAlgorithm):
             i = i + 1
         return parents
 
-    def run_algorithm(self, show_results=True, save_name=None):
+    def run_algorithm(self, show_results=True, save_name=None, show_progressbar=True):
         population = self.init_population()
 
         fitness_values = np.array(
@@ -179,8 +178,15 @@ class NSGA2(GeneticAlgorithm):
         ]
 
         n = len(population)
-        for _ in tqdm(range(self.nr_generations)):
-            offspring = self.create_offspring(population, 0.8, 0.3)
+
+        generations = (
+            tqdm(range(self.nr_generations), desc="Running NSGA2")
+            if show_progressbar
+            else range(self.nr_generations)
+        )
+
+        for _ in generations:
+            offspring = self.create_offspring(population)
             population.extend(offspring)
             frontiers = self.fast_non_dominated_sort(population)
             population = self.crowding_distance_selection(frontiers, n)
@@ -200,6 +206,7 @@ class NSGA2(GeneticAlgorithm):
             best_hotspots.append(np.max(fitness_values[:, 4]))
 
         best_route = population[np.argmin(fitness_values[:, 0])]
+        best_route_values = self.calculate_fitness(best_route)
 
         self.plot_results(
             avg_fitness,
@@ -255,6 +262,7 @@ class NSGA2(GeneticAlgorithm):
         return (
             population,
             best_route,
+            best_route_values,
             avg_fitness,
             best_fitness,
             avg_distance,

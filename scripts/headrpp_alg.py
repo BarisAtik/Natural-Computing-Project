@@ -1,18 +1,17 @@
-import random, math
+import random
 import numpy as np
-from tqdm import tqdm
-import matplotlib.pyplot as plt
+from tqdm.auto import tqdm
 from scripts.genetic_algorithm import GeneticAlgorithm
 
 
 class HEADRPP(GeneticAlgorithm):
-    def tournament_selection(self, population, group_size):
-        assert len(population) % group_size == 0
+    def tournament_selection(self, population):
+        assert len(population) % self.group_size == 0
 
         random.shuffle(population)
         grouped_population = []
-        for i in range(0, len(population), group_size):
-            grouped_population.append(population[i : i + group_size])
+        for i in range(0, len(population), self.group_size):
+            grouped_population.append(population[i : i + self.group_size])
 
         parents = []
         for group in grouped_population:
@@ -20,7 +19,7 @@ class HEADRPP(GeneticAlgorithm):
             parents.append(winner)
         return parents
 
-    def run_algorithm(self, show_results=True, save_name=None):
+    def run_algorithm(self, show_results=True, save_name=None, show_progressbar=True):
         population = self.init_population()
 
         fitness_values = np.array(
@@ -43,9 +42,15 @@ class HEADRPP(GeneticAlgorithm):
             np.max(fitness_values[:, 4])
         ]
 
-        for _ in tqdm(range(self.nr_generations)):
-            fittest_parents = self.tournament_selection(population, 2)
-            population = self.create_offspring(fittest_parents, 0.8, 0.3)
+        generations = (
+            tqdm(range(self.nr_generations), desc="Running HEADRPP")
+            if show_progressbar
+            else range(self.nr_generations)
+        )
+
+        for _ in generations:
+            fittest_parents = self.tournament_selection(population)
+            population = self.create_offspring(fittest_parents)
             fitness_values = np.array(
                 [self.calculate_fitness(route) for route in population]
             )
@@ -61,6 +66,7 @@ class HEADRPP(GeneticAlgorithm):
             best_hotspots.append(np.max(fitness_values[:, 4]))
 
         best_route = population[np.argmin(fitness_values[:, 0])]
+        best_route_values = self.calculate_fitness(best_route)
 
         self.plot_results(
             avg_fitness,
@@ -116,6 +122,7 @@ class HEADRPP(GeneticAlgorithm):
         return (
             population,
             best_route,
+            best_route_values,
             avg_fitness,
             best_fitness,
             avg_distance,
