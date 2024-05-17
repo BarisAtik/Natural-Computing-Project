@@ -3,6 +3,8 @@ from tqdm.auto import tqdm
 from scripts.headrpp_alg import HEADRPP
 from scripts.nsga2 import NSGA2
 import matplotlib.pyplot as plt
+from os import listdir
+import time, json
 
 
 class Comparator:
@@ -26,6 +28,7 @@ class Comparator:
         self.p_mutation = p_mutation
         self.group_size = group_size
         self.init_representations()
+        self.init_run_number()
 
     def init_representations(self):
         self.repr_sp = fr.Representation(
@@ -34,6 +37,14 @@ class Comparator:
         self.repr_nl = fr.Representation(
             "./data/nodes_nl.csv", "./data/edges_nl.csv", maptype="nl"
         )
+
+    def init_run_number(self):
+        self.run_number = 1
+        for file in listdir("results"):
+            if "comp" in file:
+                run_number = int(file.split("_")[1])
+                if run_number >= self.run_number:
+                    self.run_number = run_number + 1
 
     def evaluate_algorithm(
         self,
@@ -55,7 +66,10 @@ class Comparator:
             self.p_mutation,
             self.group_size,
         )
-        return alg.run_algorithm(show_results=False, show_progressbar=False)[2]
+        start_time = time.time()
+        result = alg.run_algorithm(show_results=False, show_progressbar=False)[2]
+        time_taken = time.time() - start_time
+        return result + (time_taken,)
 
     def plot_results(self, map_name, results_headrpp, results_nsga2):
         fig, axs = plt.subplots(2, 3, figsize=(15, 10))
@@ -102,7 +116,7 @@ class Comparator:
 
         plt.tight_layout()
         plt.savefig(
-            f"results/comparison_objectives_{map_name.replace(' ', '_').lower()}.png"
+            f"results/exp_{self.run_number}_comp_obj_{map_name.replace(' ', '_').lower()}.png"
         )
         plt.show()
         plt.close()
@@ -133,10 +147,45 @@ class Comparator:
 
         plt.tight_layout()
         plt.savefig(
-            f"results/comparison_fitness_{map_name.replace(' ', '_').lower()}.png"
+            f"results/exp_{self.run_number}_comp_fit_{map_name.replace(' ', '_').lower()}.png"
         )
         plt.show()
         plt.close()
+
+        fig, ax = plt.subplots()
+        ax.boxplot(
+            [result[-1] for result in results_headrpp],
+            positions=[1],
+            labels=["HEADRPP"],
+            patch_artist=True,
+        )
+        ax.boxplot(
+            [result[-1] for result in results_nsga2],
+            positions=[2],
+            labels=["NSGA-II"],
+            patch_artist=True,
+        )
+        ax.set_title(f"Time taken to run the algorithms on a map of {map_name}")
+        ax.set_ylabel("Time taken (s)")
+        plt.savefig(
+            f"results/exp_{self.run_number}_comp_time_{map_name.replace(' ', '_').lower()}.png"
+        )
+        plt.show()
+        plt.close()
+
+    def store_results(
+        self, results_headrpp_sp, results_headrpp_nl, results_nsga2_sp, results_nsga2_nl
+    ):
+        with open(f"results/exp_{self.run_number}_comp_data.json", "w") as f:
+            json.dump(
+                {
+                    "results_headrpp_sp": results_headrpp_sp,
+                    "results_headrpp_nl": results_headrpp_nl,
+                    "results_nsga2_sp": results_nsga2_sp,
+                    "results_nsga2_nl": results_nsga2_nl,
+                },
+                f,
+            )
 
     def run_comparison(
         self, nr_runs, start_node_sp, end_node_sp, start_node_nl, end_node_nl
@@ -188,3 +237,6 @@ class Comparator:
             )
         self.plot_results(self.repr_sp.map_name, results_headrpp_sp, results_nsga2_sp)
         self.plot_results(self.repr_nl.map_name, results_headrpp_nl, results_nsga2_nl)
+        self.store_results(
+            results_headrpp_sp, results_headrpp_nl, results_nsga2_sp, results_nsga2_nl
+        )
