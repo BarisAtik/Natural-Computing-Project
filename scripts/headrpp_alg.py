@@ -121,12 +121,12 @@ class HEADRPP(GeneticAlgorithm):
 
         return (
             population,
-            best_route,
+            best_route, 
             best_route_values,
             avg_fitness,
             best_fitness,
             avg_distance,
-            best_distance,
+            best_distance, 
             avg_traffic,
             best_traffic,
             avg_pollution,
