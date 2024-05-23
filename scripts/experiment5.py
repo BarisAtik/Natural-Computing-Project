@@ -93,10 +93,14 @@ def run_experiment_5(
             pass
         elif i == 1:
             avg_best_dijkstra = calc_traffic(best_route_dijkstra, repr)
+            best_route_dijkstra = calc_traffic(best_route_dijkstra, repr)
         elif i == 2:
             avg_best_dijkstra = calc_polution(best_route_dijkstra, repr)
+            best_route_dijkstra = calc_polution(best_route_dijkstra, repr)
         elif i == 3:
             avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
+            best_route_dijkstra = calc_hotspots(best_route_dijkstra, repr)
+        dijkstra_costs.append(best_route_dijkstra)
         dijkstra_costs.append(avg_best_dijkstra)
         dijkstra_times.append(time.time() - start_time)
 
