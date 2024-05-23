@@ -99,7 +99,8 @@ def run_experiment_5(
         elif i == 3:
             avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
         dijkstra_costs.append(avg_best_dijkstra)
-        dijkstra_results.append(best_route_dijkstra, avg_best_dijkstra)
+        dijkstra_results.append(best_route_dijkstra)
+        dijkstra_results.append(avg_best_dijkstra)
         dijkstra_times.append(time.time() - start_time)
 
     results_headrpp = {
