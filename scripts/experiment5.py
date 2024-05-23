@@ -73,6 +73,7 @@ def run_experiment_5(
     headrpp_costs = []
     nsga_times = []
     headrpp_times = []
+    dijkstra_costs = []
     dijkstra_times = []
 
     for j in range(nr_runs):
@@ -86,20 +87,18 @@ def run_experiment_5(
         headrpp_costs.append(headrpp_cost)
         headrpp_times.append(time.time() - start_time)
 
-    start_time = time.time()
-    best_route_dijkstra, avg_best_dijkstra = dijk.run_algorithm(show_results=False, weights=weights)
-    dijkstra_times = [time.time() - start_time] * nr_runs
-    
-    if i == 0:
-        pass
-    elif i == 1:
-        avg_best_dijkstra = calc_traffic(best_route_dijkstra, repr)
-    elif i == 2:
-        avg_best_dijkstra = calc_polution(best_route_dijkstra, repr)
-    elif i == 3:
-        avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
-
-    dijkstra_costs = [avg_best_dijkstra] * nr_runs
+        start_time = time.time()
+        best_route_dijkstra, avg_best_dijkstra = dijk.run_algorithm(show_results=False, weights=weights)
+        if i == 0:
+            pass
+        elif i == 1:
+            avg_best_dijkstra = calc_traffic(best_route_dijkstra, repr)
+        elif i == 2:
+            avg_best_dijkstra = calc_polution(best_route_dijkstra, repr)
+        elif i == 3:
+            avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
+        dijkstra_costs.append(avg_best_dijkstra)
+        dijkstra_times.append(time.time() - start_time)
 
     results_headrpp = {
         "costs": headrpp_costs,
