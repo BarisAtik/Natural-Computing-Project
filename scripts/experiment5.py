@@ -25,9 +25,9 @@ def calc_hotspots(route, repr):
     return total_hotspots
 
 def store_results(
-    file_path, run_number, weight_name, results_headrpp, results_nsga2, results_dijkstra
+    file_path, version, weight_name, results_headrpp, results_nsga2, results_dijkstra, country_name
 ):
-    with open(f"{file_path}/exp_{run_number}_comp_data_{weight_name}.json", "w") as f:
+    with open(f"{file_path}/weight_{weight_name}_version_{version}_country_{country_name}.json", "w") as f:
         json.dump(
             {
                 "results_headrpp": results_headrpp,
@@ -38,6 +38,7 @@ def store_results(
         )
 
 def run_experiment_5(
+    version,
     repr,
     start_node,
     end_node,
@@ -58,61 +59,63 @@ def run_experiment_5(
     weight_names = ["distance", "traffic", "pollution", "hotspots"]
 
     i = 0
-
     if weights == [0, 1, 0, 0]:
         i = 1
     elif weights == [0, 0, 1, 0]:
         i = 2
     elif weights == [0, 0, 0, 1]:
         i = 3
-    
+
+    nsga = nsga2.NSGA2(repr, nr_gen_nsga2, start_node, end_node, pop_size, weights, p_crossover, p_mutation, group_size)
+    head = headrpp.HEADRPP(repr, nr_gen_headrpp, start_node, end_node, pop_size, weights, p_crossover, p_mutation, group_size)
+
+    nsga_costs = []
+    headrpp_costs = []
+    nsga_times = []
+    headrpp_times = []
+    dijkstra_times = []
+
     for j in range(nr_runs):
-        nsga_costs = []
-        headrpp_costs = []
-        nsga_times = []
-        headrpp_times = []
-
-        nsga = nsga2.NSGA2(repr, nr_gen_nsga2, start_node, end_node, pop_size, weights, p_crossover, p_mutation, group_size)
-        head = headrpp.HEADRPP(repr, nr_gen_headrpp, start_node, end_node, pop_size, weights, p_crossover, p_mutation, group_size)
-
         start_time = time.time()
-        nsga_costs.append(nsga.run_algorithm(show_results=False, show_progressbar=False)[2 * i + 6][-1])
+        nsga_cost = nsga.run_algorithm(show_results=False, show_progressbar=False)[2 * i + 6][-1]
+        nsga_costs.append(nsga_cost)
         nsga_times.append(time.time() - start_time)
 
         start_time = time.time()
-        headrpp_costs.append(head.run_algorithm(show_results=False, show_progressbar=False)[2 * i + 6][-1])
+        headrpp_cost = head.run_algorithm(show_results=False, show_progressbar=False)[2 * i + 6][-1]
+        headrpp_costs.append(headrpp_cost)
         headrpp_times.append(time.time() - start_time)
 
-        best_route_dijkstra, avg_best_dijkstra = dijk.run_algorithm(show_results=False, weights=weights)
-        if i == 0:
-            pass
-        elif i == 1:
-            avg_best_dijkstra = calc_traffic(best_route_dijkstra, repr)
-        elif i == 2:
-            avg_best_dijkstra = calc_polution(best_route_dijkstra, repr)
-        elif i == 3:
-            avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
+    start_time = time.time()
+    best_route_dijkstra, avg_best_dijkstra = dijk.run_algorithm(show_results=False, weights=weights)
+    dijkstra_times = [time.time() - start_time] * nr_runs
+    
+    if i == 0:
+        pass
+    elif i == 1:
+        avg_best_dijkstra = calc_traffic(best_route_dijkstra, repr)
+    elif i == 2:
+        avg_best_dijkstra = calc_polution(best_route_dijkstra, repr)
+    elif i == 3:
+        avg_best_dijkstra = calc_hotspots(best_route_dijkstra, repr)
 
-        # Add Dijkstra costs for nr_runs times to match the length of nsga_costs and headrpp_costs
-        dijkstra_costs = [avg_best_dijkstra]
-        dijkstra_times = [0]  # Assuming Dijkstra time is negligible or constant
+    dijkstra_costs = [avg_best_dijkstra] * nr_runs
 
-        # Store results for this weight combination
-        results_headrpp = {
-            "costs": headrpp_costs,
-            "times": headrpp_times
-        }
-        results_nsga2 = {
-            "costs": nsga_costs,
-            "times": nsga_times
-        }
-        results_dijkstra = {
-            "costs": dijkstra_costs,
-            "times": dijkstra_times
-        }
+    results_headrpp = {
+        "costs": headrpp_costs,
+        "times": headrpp_times
+    }
+    results_nsga2 = {
+        "costs": nsga_costs,
+        "times": nsga_times
+    }
+    results_dijkstra = {
+        "costs": dijkstra_costs,
+        "times": dijkstra_times
+    }
 
-        # Store results after each run
-        store_results(file_path, j, weight_names[i], results_headrpp, results_nsga2, results_dijkstra)
+    # Store results after all runs
+    store_results(file_path, version, weight_names[i], results_headrpp, results_nsga2, results_dijkstra, country_name)
 
     # Plotting cost results
     fig, ax = plt.subplots()
