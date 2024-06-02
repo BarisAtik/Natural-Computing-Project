@@ -27,7 +27,7 @@ def calc_hotspots(route, repr):
 def store_results(
     file_path, version, weight_name, results_headrpp, results_nsga2, results_dijkstra, country_name
 ):
-    with open(f"{file_path}/weight_{weight_name}_version_{version}_country_{country_name}.json", "w") as f:
+    with open(f"{file_path}/{version}_weight_{weight_name}_country_{country_name}.json", "w") as f:
         json.dump(
             {
                 "results_headrpp": results_headrpp,
@@ -131,11 +131,11 @@ def run_experiment_5(
     ax.set_title(f"Cost Distribution for {weight_names[i]} on a map of {country_name}")
 
     # Saving the cost plot
-    save_name = "images/avg_best"
+    save_name = "images/"
     alg_name = weight_names[i]
     plt.savefig(
         save_name
-        + f"_{alg_name.lower()}_{ax.get_ylabel().split('(')[0][:-1].replace(' ', '_').lower()}.png"
+        + f"{version}_{country_name}_{alg_name.lower()}_{ax.get_ylabel().split('(')[0][:-1].replace(' ', '_').lower()}.png"
     )
     plt.show()
 
@@ -151,10 +151,10 @@ def run_experiment_5(
     ax.set_title(f"Execution Time Distribution for {weight_names[i]} on a map of {country_name}")
 
     # Saving the time plot
-    save_name = "images/time_taken"
+    save_name = "images/"
     alg_name = weight_names[i]
     plt.savefig(
         save_name
-        + f"_{alg_name.lower()}_{ax.get_ylabel().split('(')[0][:-1].replace(' ', '_').lower()}.png"
+        + f"{version}_{country_name}_{alg_name.lower()}_{ax.get_ylabel().split('(')[0][:-1].replace(' ', '_').lower()}.png"
     )
     plt.show()
