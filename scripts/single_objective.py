@@ -10,7 +10,7 @@ import json
 def calc_pollution(route, repr):
     """Calculate the pollution of a route."""
     total_pollution = 0
-    for i in range(len(route) - 1):
+    for i in range(len(route)):
         total_pollution += repr.nodes[route[i]].pollution
     return total_pollution
 
@@ -18,7 +18,7 @@ def calc_pollution(route, repr):
 def calc_traffic(route, repr):
     """Calculate the traffic of a route."""
     total_traffic = 0
-    for i in range(len(route) - 1):
+    for i in range(len(route)):
         total_traffic += repr.nodes[route[i]].traffic
     return total_traffic
 
@@ -26,7 +26,7 @@ def calc_traffic(route, repr):
 def calc_hotspots(route, repr):
     """Calculate the hotspots of a route."""
     total_hotspots = 0
-    for i in range(len(route) - 1):
+    for i in range(len(route)):
         total_hotspots += repr.nodes[route[i]].hotspots
     return total_hotspots
 
