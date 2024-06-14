@@ -3,6 +3,21 @@ import matplotlib.pyplot as plt
 
 
 class GeneticAlgorithm:
+    """
+    Generic class for a Genetic Algorithm.
+
+    Attributes:
+    - repr: The Representation object representing the network.
+    - nr_generations: The number of generations to run the algorithm for.
+    - start_node: The ID of the start node.
+    - end_node: The ID of the end node.
+    - population_size: The size of the population.
+    - weights: A list of weights for the distance, traffic, pollution, and hotspots metrics.
+    - p_crossover: The probability of crossover.
+    - p_mutation: The probability of mutation.
+    - group_size: The size of the group for tournament selection.
+    """
+
     def __init__(
         self,
         repr,
@@ -30,6 +45,16 @@ class GeneticAlgorithm:
         self.group_size = group_size
 
     def calculate_max_metrics(self):
+        """
+        Calculate the maximum values for the distance, traffic, pollution, and hotspots metrics.
+
+        Returns:
+        - max_distance: The maximum distance in the network.
+        - max_traffic: The maximum traffic in the network.
+        - max_pollution: The maximum pollution in the network.
+        - max_hotspots: The maximum hotspots in the network.
+        """
+
         max_distance = self.repr.scale_factor * sum(
             math.dist(
                 self.repr.nodes[edge.source].coords,
@@ -44,6 +69,18 @@ class GeneticAlgorithm:
         return max_distance, max_traffic, max_pollution, max_hotspots
 
     def generate_route(self, start_node=None, old_route=[], depth=1):
+        """
+        Generate a random route from the start node to the end node.
+
+        Args:
+        - start_node: The ID of the start node (optional).
+        - old_route: A list of nodes already visited in the route (optional).
+        - depth: The depth of the recursion (optional).
+
+        Returns:
+        - A list of node IDs representing the route.
+        """
+
         if depth > self.max_depth:
             return []
 
@@ -61,6 +98,13 @@ class GeneticAlgorithm:
         return route
 
     def init_population(self):
+        """
+        Initialize the population with random routes.
+
+        Returns:
+        - A list of lists of node IDs representing the initial population.
+        """
+
         initial_population = []
         while len(initial_population) < self.population_size:
             route = self.generate_route()
@@ -69,6 +113,20 @@ class GeneticAlgorithm:
         return initial_population
 
     def calculate_fitness(self, route):
+        """
+        Calculate the fitness of a route based on the distance, traffic, pollution, and hotspots metrics.
+
+        Args:
+        - route: A list of node IDs representing the route.
+
+        Returns:
+        - fitness: The fitness of the route.
+        - total_distance: The total distance of the route.
+        - total_traffic: The total traffic of the route.
+        - total_pollution: The total pollution of the route.
+        - total_hotspots: The total hotspots of the route.
+        """
+
         total_distance = self.repr.scale_factor * sum(
             math.dist(
                 self.repr.nodes[route[i]].coords,
@@ -94,6 +152,16 @@ class GeneticAlgorithm:
         return fitness, total_distance, total_traffic, total_pollution, total_hotspots
 
     def loop_anneal(self, route):
+        """
+        Remove loops from a route.
+
+        Args:
+        - route: A list of node IDs representing the route.
+
+        Returns:
+        - new_route: A list of node IDs representing the route without loops.
+        """
+
         visited = set()
         new_route = []
         for node in route:
@@ -107,6 +175,18 @@ class GeneticAlgorithm:
         return new_route
 
     def crossover(self, parent1, parent2):
+        """
+        Perform crossover between two parents.
+
+        Args:
+        - parent1: A list of node IDs representing the first parent.
+        - parent2: A list of node IDs representing the second parent.
+
+        Returns:
+        - child1: A list of node IDs representing the first child.
+        - child2: A list of node IDs representing the second child.
+        """
+
         common_nodes = set(parent1) & set(parent2)
         if len(common_nodes) > 0:
             crossover_node = random.choice(list(common_nodes))
@@ -119,6 +199,16 @@ class GeneticAlgorithm:
             return parent1, parent2
 
     def mutation(self, route):
+        """
+        Perform mutation on a route.
+
+        Args:
+        - route: A list of node IDs representing the route.
+
+        Returns:
+        - mutated_route: A list of node IDs representing the mutated route.
+        """
+
         mutation_point = random.choice(route[1:-1])
         index = route.index(mutation_point)
         new_part = self.generate_route(mutation_point, route[:index])
@@ -128,6 +218,16 @@ class GeneticAlgorithm:
         return mutated_route
 
     def create_offspring(self, parents):
+        """
+        Create offspring from a list of parents.
+
+        Args:
+        - parents: A list of lists of node IDs representing the parents.
+
+        Returns:
+        - offspring: A list of lists of node IDs representing the offspring.
+        """
+
         offspring = []
         choices = range(len(parents))
         for _ in range(0, self.population_size, 2):
@@ -159,6 +259,20 @@ class GeneticAlgorithm:
         show_results=True,
         save_name=None,
     ):
+        """
+        Plot the average and best fitness of the population over time.
+
+        Args:
+        - avg_fitness: A list of average fitness values over time.
+        - best_fitness: A list of best fitness values over time.
+        - nr_generations: The number of generations.
+        - map_name: The name of the map.
+        - ylabel: The label for the y-axis.
+        - alg_name: The name of the algorithm.
+        - show_results: Whether to show the results (optional).
+        - save_name: The name to save the plot as (optional).
+        """
+
         plt.figure(figsize=(10, 7))
         plt.plot(
             range(nr_generations + 1), avg_fitness, label=f"Average for {alg_name}"

@@ -2,7 +2,7 @@
 
 Welcome to the project repository of Group 14 for the Natural Computing course at Radboud University. This repository contains scripts, data, and instructions on how to reproduce the results of our experiments.
 
-**Natural computing project by Group 14 - Authors: Tygo Francissen, Dick Blankvoort, Baris Atik**
+**Natural Computing project by Group 14 - Authors: Tygo Francissen, Dick Blankvoort, Baris Atik**
 
 ## Overview
 
@@ -16,7 +16,7 @@ This repository is structured in different categories including data, scripts, a
 
 The notebooks are the starting points for the experiments. These notebooks include:
 
-- `explorer.ipynb`: The main notebook used for running the experiments, plotting and data exploration. It being a notebook allows us to explore our representation in a more dynamic manner.
+- `explorer.ipynb`: The main notebook used for running the experiments, plotting and data exploration. It being a notebook allows us to explore our representations in a more dynamic manner.
 - `plotter.ipynb`: A small side notebook used to process the results into more sophisticated plots. Irrelevant when trying to reproduce our results.
 
 ### Scripts
@@ -35,7 +35,7 @@ The `scripts` folder contains the various scripts used in our implementation tha
 
 The `data` folder contains the various data files used in our implementation. It contains .csv files storing the nodes and edges for our two map representations.
 
-## Ouput Files
+## Output Files
 
 When running either the single-objective or multi-objective experiments, JSON files are stored to save the results. Additionally, figures of the plots are stored for all runs of an algorithm, which will end up in the `images` or `results` folder. The stored JSON files contain the results of the comparison between the algorithms on the maps of Singapore and the Netherlands for different experiments.
 
@@ -52,4 +52,4 @@ For the single-objective experiments, the JSON files are similar but split betwe
 
 ## Reproduction Instructions
 
-In the case that you want to reproduce our experimental results, we refer to the Explorer notebook. This notebooks contains the used parameters, routes, and libraries used in this study. The current notebook already contains the outputs when running all notebook cells after each other. To reproduce the experiments, the weights or routes can be changed in the indicated cells. For the single- and multi-objective experiments, note that only 1 run is currently displayed. If you want to do the original amount of runs, you have to comment out the indicated lines with `nr_runs=1`. Note that the running time increases to 10-20 hours per experiment.
+In the case that you want to reproduce our experimental results, we refer to the Explorer notebook. This notebook contains the used parameters, routes, and libraries used in this study. It already contains the outputs when running all notebook cells after each other. To reproduce the experiments, the weights or routes can be changed in the indicated cells. For the single- and multi-objective experiments, note that only 1 run is currently displayed. If you want to do the original amount of runs, you have to comment out the indicated lines with `nr_runs=1`. Note that the running time increases to 10-20 hours per experiment.

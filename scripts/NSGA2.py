@@ -5,7 +5,21 @@ from scripts.genetic_algorithm import GeneticAlgorithm
 
 
 class NSGA2(GeneticAlgorithm):
+    """
+    A class to represent the NSGA2 algorithm.
+    """
+
     def fast_non_dominated_sort(self, population):
+        """
+        Perform fast non-dominated sorting on the population.
+
+        Args:
+        - population: A list of routes.
+
+        Returns:
+        - list_population_members: A list of lists of routes, where each list represents a frontier.
+        """
+
         frontiers = []
         dominated_solutions = [[] for _ in range(len(population))]
         num_dominations = [0] * len(population)
@@ -30,6 +44,7 @@ class NSGA2(GeneticAlgorithm):
             ]
         )
 
+        # Now we will find the rest of the frontiers
         i = 0
         while frontiers[-1]:
             next_front = []
@@ -48,20 +63,26 @@ class NSGA2(GeneticAlgorithm):
         return list_population_members
 
     def crowding_distance_selection(self, frontiers, group_size):
+        """
+        Perform crowding distance selection on the frontiers to select the parents for the next generation.
+
+        Args:
+        - frontiers: A list of lists of routes, where each list represents a frontier.
+        - group_size: The number of parents to select.
+
+        Returns:
+        - parents: A list of routes selected as parents.
+        """
+
         parents = []
         i = 0
         while len(parents) < group_size:
             if (len(frontiers[i]) + len(parents)) <= group_size:
                 parents.extend(frontiers[i])
             else:
-                # Now we select the one's with the biggest crowding distance
-                # We calculate the crowding distance for each individual in this frontier
-                # We sort the individuals in this frontier based on the crowding distance
-                # We select the first individuals until we have the group size
+                # Calculate the maximum values for each of the fitness values
                 crowding_distances = []
                 for j in range(0, len(frontiers[i])):
-                    # Now calculate the crowding distance for the individual frontier[i][j]
-                    # We will do this by finding the two closest neighbours to frontier[i][j] in this front
                     closest_neighbour_1 = None
                     closest_neighbour_2 = None
                     for k in range(0, len(frontiers[i])):
@@ -89,6 +110,7 @@ class NSGA2(GeneticAlgorithm):
                         sum_pollution_i_j = total_pollution / self.max_pollution
                         sum_hotspots_i_j = 1 - total_hotspots / self.max_hotspots
 
+                        # Calculate the crowding distance for the individual frontier[i][j]
                         total_distance = 0
                         for l in range(0, len(frontiers[i][k]) - 1):
                             total_distance += math.dist(
@@ -114,19 +136,18 @@ class NSGA2(GeneticAlgorithm):
                         sum_hotspots_i_k = 1 - total_hotspots / self.max_hotspots
 
                         # Calculate the crowding distance for the individual frontier[i][j]
-
                         coordinate_i_j = (
                             self.weights[0] * sum_distance_i_j,
                             self.weights[1] * sum_traffic_i_j,
                             self.weights[2] * sum_pollution_i_j,
                             self.weights[3] * sum_hotspots_i_j,
-                        )  # (sum_feature1, sum_feature2, sum_feature3)
+                        )
                         coordinate_i_k = (
                             self.weights[0] * sum_distance_i_k,
                             self.weights[1] * sum_traffic_i_k,
                             self.weights[2] * sum_pollution_i_k,
                             self.weights[3] * sum_hotspots_i_k,
-                        )  # (sum_feature1, sum_feature2, sum_feature3)
+                        )
                         distance_i_j_k = math.dist(coordinate_i_j, coordinate_i_k)
                         if closest_neighbour_1 is None:
                             closest_neighbour_1 = (k, distance_i_j_k)
@@ -137,17 +158,15 @@ class NSGA2(GeneticAlgorithm):
                                 closest_neighbour_1 = (k, distance_i_j_k)
                             elif distance_i_j_k < closest_neighbour_2[1]:
                                 closest_neighbour_2 = (k, distance_i_j_k)
-                    # Now we calculate the crowding distance for this individual
-                    # Which is the sum of the distances of the two closest neighbours
+
+                    # Calculate the crowding distance for the individual frontier[i][j]
                     crowding_distance_i_j = (
                         closest_neighbour_1[-1] + closest_neighbour_2[-1]
                     )
                     crowding_distances.append((frontiers[i][j], crowding_distance_i_j))
 
-                    # Sort crowding_distances based on crowding distances
                     crowding_distances.sort(key=lambda x: x[1], reverse=True)
 
-                # To fill the population we need k more parents
                 k = group_size - len(parents)
                 k_parents = [pair[0] for pair in crowding_distances[:k]]
                 parents.extend(k_parents)
@@ -155,6 +174,30 @@ class NSGA2(GeneticAlgorithm):
         return parents
 
     def run_algorithm(self, show_results=True, save_name=None, show_progressbar=True):
+        """
+        Run the NSGA2 algorithm to find the best route.
+
+        Args:
+        - show_results: A boolean indicating whether to plot the results.
+        - save_name: The name of the file to save the plots to.
+        - show_progressbar: A boolean indicating whether to show the progress bar.
+
+        Returns:
+        - population: A list of routes in the final population.
+        - best_route: The best route found by the algorithm.
+        - best_route_values: The fitness values of the best route.
+        - avg_fitness: A list of the average fitness values over the generations.
+        - best_fitness: A list of the best fitness values over the generations.
+        - avg_distance: A list of the average distance values over the generations.
+        - best_distance: A list of the best distance values over the generations.
+        - avg_traffic: A list of the average traffic values over the generations.
+        - best_traffic: A list of the best traffic values over the generations.
+        - avg_pollution: A list of the average pollution values over the generations.
+        - best_pollution: A list of the best pollution values over the generations.
+        - avg_hotspots: A list of the average hotspots values over the generations.
+        - best_hotspots: A list of the best hotspots values over the generations.
+        """
+
         population = self.init_population()
 
         fitness_values = np.array(

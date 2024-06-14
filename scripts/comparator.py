@@ -1,13 +1,30 @@
 import scripts.framework as fr
 from tqdm.auto import tqdm
 from scripts.headrpp_alg import HEADRPP
-from scripts.nsga2 import NSGA2
+from scripts.NSGA2 import NSGA2
 import matplotlib.pyplot as plt
 from os import listdir
 import time, json
 
 
 class Comparator:
+    """
+    Class to compare the HEADRPP and NSGA-II algorithms on two different maps.
+
+    Attributes:
+    - pop_size_sp: The population size for the map of Singapore.
+    - pop_size_nl: The population size for the map of the Netherlands.
+    - nr_gen_headrpp: The number of generations for the HEADRPP algorithm.
+    - nr_gen_nsga2: The number of generations for the NSGA-II algorithm.
+    - weights: The weights for the objectives.
+    - p_crossover: The probability of crossover.
+    - p_mutation: The probability of mutation.
+    - group_size: The size of the tournament groups.
+    - repr_sp: The representation of the map of Singapore.
+    - repr_nl: The representation of the map of the Netherlands.
+    - run_number: The number of the current run.
+    """
+
     def __init__(
         self,
         pop_size_sp,
@@ -55,6 +72,21 @@ class Comparator:
         end_node,
         population_size,
     ):
+        """
+        Evaluate an algorithm on a given map.
+
+        Args:
+        - algorithm: The algorithm to evaluate.
+        - representation: The representation of the map.
+        - nr_generations: The number of generations.
+        - start_node: The start node of the path.
+        - end_node: The end node of the path.
+        - population_size: The population size.
+
+        Returns:
+        - The results of the algorithm.
+        """
+
         alg = algorithm(
             representation,
             nr_generations,
@@ -72,6 +104,15 @@ class Comparator:
         return result + (time_taken,)
 
     def plot_results(self, map_name, results_headrpp, results_nsga2):
+        """
+        Plot the results of the algorithms in plots.
+
+        Args:
+        - map_name: The name of the map.
+        - results_headrpp: The results of the HEADRPP algorithm.
+        - results_nsga2: The results of the NSGA-II algorithm.
+        """
+
         fig, axs = plt.subplots(2, 3, figsize=(15, 10))
         fig.suptitle(f"Comparison of HEADRPP and NSGA-II on a map of {map_name}")
         objectives = [
@@ -81,6 +122,7 @@ class Comparator:
         x_axis = 0
         y_axis = 0
 
+        # Plot the objectives against each other
         for i, (index1, obj1) in enumerate(objectives):
             for j, (index2, obj2) in enumerate(objectives):
                 if i >= j:
@@ -121,6 +163,7 @@ class Comparator:
         plt.show()
         plt.close()
 
+        # Plot the fitness against the objectives
         fig, axs = plt.subplots(2, 2, figsize=(10, 10))
         fig.suptitle(f"Fitness against objectives on a map of {map_name}")
         for i, (index, obj) in enumerate(objectives):
@@ -152,6 +195,7 @@ class Comparator:
         plt.show()
         plt.close()
 
+        # Plot the time taken to run the algorithms
         fig, ax = plt.subplots()
         ax.boxplot(
             [result[-1] for result in results_headrpp],
@@ -176,6 +220,16 @@ class Comparator:
     def store_results(
         self, results_headrpp_sp, results_headrpp_nl, results_nsga2_sp, results_nsga2_nl
     ):
+        """
+        Store the results of the comparison in a JSON file.
+
+        Args:
+        - results_headrpp_sp: The results of the HEADRPP algorithm on the map of Singapore.
+        - results_headrpp_nl: The results of the HEADRPP algorithm on the map of the Netherlands.
+        - results_nsga2_sp: The results of the NSGA-II algorithm on the map of Singapore.
+        - results_nsga2_nl: The results of the NSGA-II algorithm on the map of the Netherlands.
+        """
+
         with open(f"results/exp_{self.run_number}_comp_data.json", "w") as f:
             json.dump(
                 {
@@ -190,6 +244,17 @@ class Comparator:
     def run_comparison(
         self, nr_runs, start_node_sp, end_node_sp, start_node_nl, end_node_nl
     ):
+        """
+        Run the comparison between the HEADRPP and NSGA-II algorithms on two different maps.
+
+        Args:
+        - nr_runs: The number of runs to perform.
+        - start_node_sp: The start node for the map of Singapore.
+        - end_node_sp: The end node for the map of Singapore.
+        - start_node_nl: The start node for the map of the Netherlands.
+        - end_node_nl: The end node for the map of the Netherlands.
+        """
+
         results_headrpp_sp = []
         results_headrpp_nl = []
         results_nsga2_sp = []

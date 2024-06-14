@@ -3,7 +3,7 @@ import numpy as np
 
 class DIJKSTRA:
     """
-    A class to represent the Dijkstra algorithm for finding the shortest path between two nodes.
+    A class to represent Dijkstra's algorithm.
 
     Attributes:
     - repr: The Representation object representing the network.
@@ -18,7 +18,7 @@ class DIJKSTRA:
 
     def run_algorithm(self, weights=[1, 0, 0, 0], show_results=True, save_name=False):
         """
-        Run the Dijkstra algorithm to find the shortest path between two nodes.
+        Run Dijkstra's algorithm to find the shortest path between two nodes.
 
         Args:
         - weights: A list of weights for the distance, traffic, pollution, and hotspots metrics.
@@ -39,7 +39,9 @@ class DIJKSTRA:
         visited = set()
 
         # Find the maximum hotspot value
-        max_hotspot_value = max([self.repr.nodes[nd].hotspots for nd in self.repr.nodes])
+        max_hotspot_value = max(
+            [self.repr.nodes[nd].hotspots for nd in self.repr.nodes]
+        )
 
         # Run the algorithm
         while visited != set(self.repr.nodes):
@@ -97,7 +99,8 @@ class DIJKSTRA:
         if show_results:
             self.repr.plot_map(
                 path,
-                plot_nodes=True,
+                plot_nodes=False,
+                show_axes=False,
                 total_distance=total_distance,
                 save_name=save_name,
             )

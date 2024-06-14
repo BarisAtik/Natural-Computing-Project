@@ -5,7 +5,21 @@ from scripts.genetic_algorithm import GeneticAlgorithm
 
 
 class HEADRPP(GeneticAlgorithm):
+    """
+    A class to represent HEADRPP.
+    """
+
     def tournament_selection(self, population):
+        """
+        Perform tournament selection to select the parents for the next generation.
+
+        Args:
+        - population: A list of routes.
+
+        Returns:
+        - parents: A list of routes selected as parents.
+        """
+
         assert len(population) % self.group_size == 0
 
         random.shuffle(population)
@@ -20,6 +34,30 @@ class HEADRPP(GeneticAlgorithm):
         return parents
 
     def run_algorithm(self, show_results=True, save_name=None, show_progressbar=True):
+        """
+        Run the HEADRPP algorithm to find the best route.
+
+        Args:
+        - show_results: A boolean indicating whether to plot the results.
+        - save_name: The name of the file to save the plots to.
+        - show_progressbar: A boolean indicating whether to show the progress bar.
+
+        Returns:
+        - population: A list of routes in the final population.
+        - best_route: The best route found by the algorithm.
+        - best_route_values: The fitness values of the best route.
+        - avg_fitness: A list of the average fitness values over the generations.
+        - best_fitness: A list of the best fitness values over the generations.
+        - avg_distance: A list of the average distance values over the generations.
+        - best_distance: A list of the best distance values over the generations.
+        - avg_traffic: A list of the average traffic values over the generations.
+        - best_traffic: A list of the best traffic values over the generations.
+        - avg_pollution: A list of the average pollution values over the generations.
+        - best_pollution: A list of the best pollution values over the generations.
+        - avg_hotspots: A list of the average hotspots values over the generations.
+        - best_hotspots: A list of the best hotspots values over the generations.
+        """
+
         population = self.init_population()
 
         fitness_values = np.array(
